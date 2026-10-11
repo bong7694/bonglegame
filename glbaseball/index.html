@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>글야구</title>
+  <link rel="stylesheet" href="../css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1 id="title">글야구</h1>
+        <p class="sub" id="meta"></p>
+      </div>
+      <a class="btn" href="../index.html">홈</a>
+    </div>
+    <div class="tabs">
+      <a class="tab" id="n" href="?mode=normal">일반</a>
+      <a class="tab" id="c" href="?mode=challenge">챌린지</a>
+      <a class="tab" id="rank" href="../ranking.html?game=glbaseball">랭킹</a>
+    </div>
+    <div id="rows"></div>
+    <form id="form" class="stack">
+      <input id="guess" maxlength="12" placeholder="단어" autocomplete="off" />
+      <button class="btn primary" type="submit">투구</button>
+    </form>
+    <p class="hint" id="msg"></p>
+  </div>
+  <script type="module">
+    import { hashStr, seoulDay, nickname } from "../js/common.js";
+    import { recordResult } from "../js/rank.js";
+
+    const q = new URLSearchParams(location.search);
+    const mode = q.get("mode") === "challenge" ? "challenge" : "normal";
+    const day = seoulDay();
+    const len = mode === "challenge" ? (hashStr(day + "|gl-len") % 2 === 0 ? 6 : 7) : 5;
+    const key = "bongle:glbaseball:" + mode + ":" + day;
+    document.getElementById("title").textContent = mode === "challenge" ? "글야구 챌린지" : "글야구";
+    document.getElementById(mode === "challenge" ? "c" : "n").classList.add("on");
+    document.getElementById("rank").href = "../ranking.html?game=glbaseball&mode=" + mode;
+    document.getElementById("meta").textContent = len + "자모 · 5회";
+
+    const words = await fetch("words.json").then((r) => r.json());
+    const list = words[String(len)] || [];
+    const answer = list[hashStr(day + "|" + mode + "|" + len) % list.length];
+    let state = JSON.parse(localStorage.getItem(key) || "null");
+    if (!state) state = { guesses: [], status: "playing" };
+
+    function judge(guess, ans) {
+      const g = [...guess];
+      const a = [...ans];
+      const states = Array(a.length).fill("a");
+      const usedG = Array(a.length).fill(false);
+      const usedA = Array(a.length).fill(false);
+      for (let i = 0; i < a.length; i++) {
+        if (g[i] === a[i]) { states[i] = "c"; usedG[i] = true; usedA[i] = true; }
+      }
+      for (let i = 0; i < a.length; i++) {
+        if (usedG[i]) continue;
+        for (let j = 0; j < a.length; j++) {
+          if (usedA[j] || g[i] !== a[j]) continue;
+          states[i] = "p"; usedG[i] = true; usedA[j] = true; break;
+        }
+      }
+      return { states, win: states.every((s) => s === "c") };
+    }
+
+    function paint() {
+      const box = document.getElementById("rows");
+      box.innerHTML = state.guesses.map((g) => `
+        <div class="guess">${[...g.jamo].map((ch, i) => `<div class="jamo ${g.states[i]}">${ch}</div>`).join("")}</div>
+      `).join("");
+    }
+
+    async function finish(won, tries) {
+      state.status = won ? "won" : "lost";
+      localStorage.setItem(key, JSON.stringify(state));
+      const metric = won ? tries : tries + 0.5;
+      const msg = document.getElementById("msg");
+      msg.textContent = (won ? "성공" : "실패") + " · 정답 " + answer[0] + (answer[2] ? " · " + answer[2] : "");
+      document.getElementById("form").hidden = true;
+      try {
+        const res = await recordResult({ gameId: "glbaseball", mode, won, metric });
+        if (!res.saved) msg.textContent += " · " + res.reason;
+      } catch (err) {
+        msg.textContent += " · " + (err.message || "저장 실패");
+      }
+    }
+
+    document.getElementById("form").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      if (state.status !== "playing") return;
+      if (!nickname()) {
+        document.getElementById("msg").textContent = "홈에서 닉네임을 입력하세요.";
+        return;
+      }
+      const word = document.getElementById("guess").value.replace(/\s/g, "");
+      const found = list.find((row) => row[0] === word);
+      if (!found) {
+        document.getElementById("msg").textContent = "단어 목록에 없는 단어입니다.";
+        return;
+      }
+      const result = judge(found[1], answer[1]);
+      state.guesses.push({ word, jamo: found[1], states: result.states });
+      localStorage.setItem(key, JSON.stringify(state));
+      document.getElementById("guess").value = "";
+      paint();
+      if (result.win) return finish(true, state.guesses.length);
+      if (state.guesses.length >= 5) return finish(false, state.guesses.length);
+    });
+
+    if (!answer) {
+      document.getElementById("msg").textContent = "단어 목록을 불러오지 못했습니다.";
+    } else if (state.status !== "playing") {
+      document.getElementById("form").hidden = true;
+      document.getElementById("msg").textContent = "오늘은 이미 끝났습니다. 정답 " + answer[0];
+    }
+    paint();
+  </script>
+</body>
+</html>

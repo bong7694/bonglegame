@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>미니게임</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>미니게임</h1>
+        <p class="sub" id="who">닉네임을 입력하세요</p>
+      </div>
+      <a class="btn" href="ranking.html">랭킹</a>
+    </div>
+    <div class="panel">
+      <input id="nick" maxlength="20" placeholder="표시 닉네임" />
+      <p class="hint">랭킹 저장은 Firebase 로그인이 있을 때만 됩니다. 닉네임은 랭킹에 표시할 이름입니다.</p>
+      <div class="grid" id="games" style="margin-top:16px"></div>
+    </div>
+  </div>
+  <script type="module">
+    import { GAMES, nickname, setNickname } from "./js/common.js";
+    const input = document.getElementById("nick");
+    const who = document.getElementById("who");
+    input.value = nickname();
+    const paint = () => { who.textContent = nickname() ? nickname() + "님" : "닉네임을 입력하세요"; };
+    paint();
+    input.addEventListener("change", () => { setNickname(input.value); paint(); });
+    document.getElementById("games").innerHTML = GAMES.map((g) => `
+      <a class="card" href="${g.id}/index.html">
+        <div class="emoji">${g.emoji}</div>
+        <div class="name">${g.title}</div>
+        <div class="desc">${g.desc}</div>
+      </a>
+    `).join("");
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+{
+    "rooms": [
+        {
+            "id": "room_1766481790_c953c0",
+            "name": "끼순이의 방",
+            "hostId": "mjc751mxi85gh13lers",
+            "hostName": "끼순이",
+            "password": "",
+            "maxPlayers": 6,
+            "mode": "hint",
+            "timeLimit": 60,
+            "totalRounds": 3,
+            "players": [
+                {
+                    "id": "mjc751mxi85gh13lers",
+                    "name": "끼순이",
+                    "isHost": true,
+                    "score": 0
+                },
+                {
+                    "id": "mjc75o0oxgtvul93pne",
+                    "name": "ㅋㅋ",
+                    "isHost": false,
+                    "score": 0,
+                    "isSpectator": false
+                },
+                {
+                    "id": "mjc92jmsol9lqfa56tg",
+                    "name": "vyfyf",
+                    "isHost": false,
+                    "score": 0,
+                    "isSpectator": false
+                }
+            ],
+            "gameStarted": true,
+            "gameState": {
+                "started": true,
+                "mode": "hint",
+                "timeLimit": 60,
+                "totalRounds": 3,
+                "currentRound": 2,
+                "currentTurn": 6,
+                "currentDrawer": "mjc92jmsol9lqfa56tg",
+                "currentTopic": "",
+                "currentWinners": [],
+                "history": [
+                    {
+                        "round": 1,
+                        "turn": 1,
+                        "drawer": "mjc751mxi85gh13lers",
+                        "winners": [
+                            "mjc92jmsol9lqfa56tg"
+                        ]
+                    },
+                    {
+                        "round": 1,
+                        "turn": 2,
+                        "drawer": "mjc75o0oxgtvul93pne",
+                        "winners": [
+                            "mjc751mxi85gh13lers",
+                            "mjc92jmsol9lqfa56tg"
+                        ]
+                    },
+                    {
+                        "round": 1,
+                        "turn": 3,
+                        "drawer": "mjc92jmsol9lqfa56tg",
+                        "winners": [
+                            "mjc75o0oxgtvul93pne",
+                            "mjc751mxi85gh13lers"
+                        ]
+                    },
+                    {
+                        "round": 2,
+                        "turn": 4,
+                        "drawer": "mjc751mxi85gh13lers",
+                        "winners": [
+                            "mjc75o0oxgtvul93pne"
+                        ]
+                    },
+                    {
+                        "round": 2,
+                        "turn": 5,
+                        "drawer": "mjc75o0oxgtvul93pne",
+                        "winners": []
+                    }
+                ],
+                "phase": "selecting",
+                "timeLeft": 60,
+                "scores": {
+                    "mjc751mxi85gh13lers": 39,
+                    "mjc75o0oxgtvul93pne": 45,
+                    "mjc92jmsol9lqfa56tg": 40
+                },
+                "canvasData": null,
+                "topicChoices": [
+                    "강아지",
+                    "비행기",
+                    "포도"
+                ],
+                "isEndingRound": false,
+                "shouldEndRound": false
+            },
+            "lastUpdate": 1766484234
+        }
+    ],
+    "chats": {
+        "room_1766481294_04bd32": [],
+        "room_1766481790_c953c0": [
+            {
+                "id": "694a690679763",
+                "sender": "System",
+                "message": "⏰ 시간 초과! 정답: 펭귄",
+                "isSystem": "true",
+                "timestamp": 1766484230
+            },
+            {
+                "id": "694a690a77d82",
+                "sender": "System",
+                "message": "📢 라운드2 6턴 시작! 출제자: vyfyf",
+                "isSystem": "true",
+                "timestamp": 1766484234
+            }
+        ]
+    }
+}

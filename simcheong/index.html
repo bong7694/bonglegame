@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>심청</title>
+  <link rel="stylesheet" href="../css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1 id="title">심청</h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <a class="btn" href="../index.html">홈</a>
+    </div>
+    <div class="tabs">
+      <a class="tab" id="n" href="?mode=normal">일반</a>
+      <a class="tab" id="c" href="?mode=challenge">지옥</a>
+      <a class="tab" id="rank" href="../ranking.html?game=simcheong">랭킹</a>
+    </div>
+    <div class="panel" id="stage"></div>
+    <p class="hint" id="msg"></p>
+  </div>
+  <script type="module">
+    import { hashStr, seoulDay, nickname } from "../js/common.js";
+    import { recordResult } from "../js/rank.js";
+
+    const yokai = [
+      { id: "dokkaebi", name: "도깨비", intro: "방망이를 든 도깨비가 나타났다!", attacks: ["방망이 찍기", "돈나와라 뚝딱!", "씨름 한판", "도깨비불"] },
+      { id: "gumiho", name: "구미호", intro: "여우불이 피어오르며 구미호가 나타났다!", attacks: ["유혹", "꼬리춤", "여우불", "둔갑술"] },
+      { id: "eoduksini", name: "어둑시니", intro: "어둠이 스며들며 어둑시니가 나타났다!", attacks: ["그림자 잠식", "암흑", "그림자손", "검은장막"] },
+      { id: "gangcheori", name: "강철이", intro: "대지가 달아오르며 강철이가 나타났다!", attacks: ["강철이가 지나간다", "불비", "가뭄", "화룡승천"] },
+    ];
+    const q = new URLSearchParams(location.search);
+    const mode = q.get("mode") === "challenge" ? "challenge" : "normal";
+    const hell = mode === "challenge";
+    const day = seoulDay();
+    const key = "bongle:simcheong:" + mode + ":" + day;
+    const foe = yokai[hashStr(day + "|" + mode) % yokai.length];
+    document.getElementById("title").textContent = hell ? "심청 지옥" : "심청";
+    document.getElementById(hell ? "c" : "n").classList.add("on");
+    document.getElementById("rank").href = "../ranking.html?game=simcheong&mode=" + mode;
+
+    let state = JSON.parse(localStorage.getItem(key) || "null");
+    if (!state) state = { playerHp: 100, yokaiHp: 100, turn: 1, phase: "story", cut: 1, status: "playing" };
+    const stage = document.getElementById("stage");
+    const msg = document.getElementById("msg");
+
+    function save() { localStorage.setItem(key, JSON.stringify(state)); }
+    function bars() {
+      return `<p>${foe.name}</p><div class="hp"><span style="width:${state.yokaiHp}%"></span></div>
+        <p>심청 ${state.playerHp}</p><div class="hp me"><span style="width:${state.playerHp}%"></span></div>`;
+    }
+
+    async function finish(won) {
+      state.status = won ? "won" : "lost";
+      state.phase = "done";
+      save();
+      msg.textContent = won ? "토벌 성공 · 남은 체력 " + state.playerHp : "토벌 실패";
+      render();
+      try {
+        const res = await recordResult({ gameId: "simcheong", mode, won, metric: won ? state.playerHp : 0 });
+        if (!res.saved) msg.textContent += " · " + res.reason;
+      } catch (err) {
+        msg.textContent += " · " + (err.message || "저장 실패");
+      }
+    }
+
+    function render() {
+      document.getElementById("sub").textContent = foe.name + " · 턴 " + state.turn;
+      if (state.phase === "story") {
+        stage.innerHTML = `<div class="cuts"><img src="assets/cut/cut0${state.cut}.png" alt="" /></div>
+          <button class="btn primary block" id="next" type="button" style="margin-top:10px">${state.cut < 6 ? "다음" : "전투 시작"}</button>`;
+        document.getElementById("next").onclick = () => {
+          if (!nickname()) { msg.textContent = "홈에서 닉네임을 입력하세요."; return; }
+          if (state.cut < 6) state.cut += 1;
+          else state.phase = "dodge";
+          save(); render();
+        };
+        return;
+      }
+      if (state.phase === "done") {
+        stage.innerHTML = bars() + `<img class="yokai" src="assets/yokai/${foe.id}.png" alt="" />`;
+        return;
+      }
+      if (state.phase === "dodge") {
+        const label = foe.attacks[(state.turn - 1) % foe.attacks.length];
+        stage.innerHTML = bars() + `<img class="yokai" src="assets/yokai/${foe.id}.png" alt="" />
+          <p>${label}</p><canvas id="cv" width="320" height="180" style="width:100%;background:#121820;border-radius:12px"></canvas>`;
+        startDodge();
+        return;
+      }
+      stage.innerHTML = bars() + `<p>타이밍에 맞춰 공격</p><div class="bar" id="bar"><div class="sweet" style="left:42%;width:16%"></div><i id="needle"></i></div>
+        <button class="btn primary block" id="hit" type="button" style="margin-top:10px">공격</button>`;
+      const needle = document.getElementById("needle");
+      let pos = 0; let dir = 1;
+      const speed = hell ? 0.018 : 0.01;
+      const timer = setInterval(() => {
+        pos += dir * speed;
+        if (pos > 1 || pos < 0) { dir *= -1; pos = Math.max(0, Math.min(1, pos)); }
+        needle.style.left = (pos * 100) + "%";
+      }, 16);
+      document.getElementById("hit").onclick = () => {
+        clearInterval(timer);
+        const d = Math.abs(pos - 0.5);
+        const dmg = Math.round(20 * Math.max(0, 1 - d * (hell ? 3 : 2)));
+        state.yokaiHp = Math.max(0, state.yokaiHp - dmg);
+        msg.textContent = dmg + " 피해";
+        if (state.yokaiHp <= 0) return finish(true);
+        state.turn += 1;
+        state.phase = state.turn > 10 ? "done" : "dodge";
+        save();
+        if (state.turn > 10) return finish(false);
+        render();
+      };
+    }
+
+    function startDodge() {
+      const cv = document.getElementById("cv");
+      const ctx = cv.getContext("2d");
+      const px = { x: 160 };
+      let hits = 0;
+      const balls = Array.from({ length: hell ? 8 : 5 }, () => ({
+        x: Math.random() * 300 + 10,
+        y: Math.random() * -180,
+        v: hell ? 2.4 : 1.6,
+      }));
+      const move = (e) => {
+        const rect = cv.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+        px.x = Math.max(16, Math.min(304, x * (cv.width / rect.width)));
+      };
+      cv.addEventListener("pointermove", move);
+      const started = performance.now();
+      const duration = hell ? 5000 : 7000;
+      function frame(t) {
+        balls.forEach((b) => {
+          b.y += b.v;
+          if (b.y > 190) { b.y = -10; b.x = Math.random() * 300 + 10; }
+          if (Math.abs(b.x - px.x) < 16 && b.y > 140 && b.y < 170) { hits += 1; b.y = -20; }
+        });
+        ctx.clearRect(0, 0, 320, 180);
+        ctx.fillStyle = "#3d9bfd";
+        ctx.fillRect(px.x - 14, 150, 28, 16);
+        ctx.fillStyle = "#e07070";
+        balls.forEach((b) => ctx.fillRect(b.x - 6, b.y, 12, 12));
+        if (t - started < duration) requestAnimationFrame(frame);
+        else {
+          const dmg = Math.min(20, hits * 5);
+          state.playerHp = Math.max(0, state.playerHp - dmg);
+          msg.textContent = "피격 " + hits + " · 피해 " + dmg;
+          save();
+          if (state.playerHp <= 0) return finish(false);
+          state.phase = "attack";
+          render();
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    if (state.status !== "playing") {
+      state.phase = "done";
+      msg.textContent = "오늘은 이미 끝났습니다.";
+    }
+    render();
+  </script>
+</body>
+</html>

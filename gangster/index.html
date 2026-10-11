@@ -1,0 +1,5203 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>갱스터 게임</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #f1f5f9;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      /* Nickname Setup */
+      .nickname-setup {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        gap: 20px;
+      }
+
+      .nickname-setup h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        background: linear-gradient(to right, #fbbf24, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      input {
+        flex: 1;
+        padding: 12px 16px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        color: #f1f5f9;
+        font-size: 16px;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #fbbf24;
+      }
+
+      button {
+        padding: 12px 24px;
+        background: #fbbf24;
+        color: #0f172a;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      button:hover {
+        background: #f59e0b;
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      button.secondary {
+        background: #334155;
+        color: #f1f5f9;
+      }
+
+      button.secondary:hover {
+        background: #475569;
+      }
+
+      button.danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      button.danger:hover {
+        background: #dc2626;
+      }
+
+      /* Lobby - 채팅창 제거로 단일 컬럼 */
+      .lobby {
+        height: calc(100vh - 40px);
+      }
+
+      .lobby-main {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 24px;
+        overflow-y: auto;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .lobby-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .lobby-header h2 {
+        font-size: 2rem;
+      }
+
+      .welcome {
+        color: #94a3b8;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+
+      .welcome:hover {
+        color: #fbbf24;
+      }
+
+      .welcome-name {
+        color: #fbbf24;
+        font-weight: 600;
+      }
+
+      .room-creation {
+        background: #0f172a;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+      }
+
+      .room-creation h3 {
+        margin-bottom: 16px;
+        color: #fbbf24;
+      }
+
+      .room-form {
+        display: grid;
+        gap: 12px;
+      }
+
+      .checkbox-group {
+        /* display: flex; */
+        align-items: center;
+        gap: 8px;
+      }
+      input[type='checkbox'],
+      input[type='radio'] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      /* 방 옵션 행 */
+      .room-options-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0px;
+        padding: 7px;
+        background: #1e293b;
+        border-radius: 8px;
+      }
+
+      .option-group {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .option-label {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+      }
+
+      .mode-checkboxes {
+        display: flex;
+        gap: 8px;
+      }
+
+      .mode-check {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        background: #0f172a;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+
+      .mode-check:hover {
+        border-color: #fbbf24;
+      }
+
+      .mode-check input:checked + span {
+        color: #fbbf24;
+        font-weight: 600;
+      }
+
+      .mode-check input {
+        width: 14px;
+        height: 14px;
+      }
+
+      .mode-preview {
+        padding: 8px 12px;
+        background: #334155;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        color: #fbbf24;
+        text-align: center;
+      }
+
+      /* 모드 뱃지 */
+      .mode-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-left: 4px;
+      }
+
+      .mode-badge.standard {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .mode-badge.securityCam {
+        background: #10b981;
+        color: white;
+      }
+
+      .mode-badge.faceRecognition {
+        background: #22c55e;
+        color: white;
+      }
+
+      .mode-badge.irisScanner {
+        background: #8b5cf6;
+        color: white;
+      }
+
+      .mode-badge.fingerprint {
+        background: #ef4444;
+        color: white;
+      }
+
+      .room-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .room-card {
+        background: #0f172a;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        transition: border-color 0.2s;
+      }
+
+      .room-card:hover {
+        border-color: #fbbf24;
+      }
+
+      .room-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .room-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
+
+      .badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .badge.locked {
+        background: #ef4444;
+        color: white;
+      }
+
+      .badge.open {
+        background: #10b981;
+        color: white;
+      }
+
+      .room-info {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        margin-bottom: 12px;
+      }
+
+      .room-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* Chat Sidebar */
+      .chat-sidebar {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .chat-sidebar h3 {
+        margin-bottom: 16px;
+        color: #fbbf24;
+      }
+
+      /* 모바일에서 채팅 제목 숨김 */
+      @media (max-width: 900px) {
+        .chat-sidebar .chat-title {
+          display: none;
+        }
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .chat-message {
+        padding: 8px 12px;
+        background: #0f172a;
+        border-radius: 8px;
+        font-size: 0.875rem;
+      }
+
+      .chat-message.system {
+        background: #334155;
+        color: #94a3b8;
+        font-style: italic;
+      }
+
+      .chat-message.emoji {
+        background: #1e40af;
+        font-size: 1.5rem;
+        text-align: center;
+        padding: 12px;
+      }
+
+      .chat-sender {
+        font-weight: 600;
+        color: #fbbf24;
+        margin-right: 8px;
+      }
+
+      .chat-input-group {
+        display: flex;
+        gap: 8px;
+      }
+
+      /* 이모지 버튼 영역 */
+      .emoji-buttons {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .emoji-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #0f172a;
+        border: 2px solid #334155;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .emoji-btn:hover {
+        border-color: #fbbf24;
+        transform: scale(1.1);
+      }
+
+      .emoji-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* Game Room */
+      .game-room {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 20px;
+        height: calc(100vh - 40px);
+      }
+
+      .game-main {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 24px;
+        overflow-y: auto;
+      }
+
+      /* 채팅 토글 버튼 (기본 숨김) */
+      .chat-toggle {
+        display: none;
+        width: 100%;
+        padding: 10px;
+        background: #334155;
+        border: none;
+        color: #fbbf24;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+      }
+
+      .chat-toggle:hover {
+        background: #475569;
+      }
+
+      /* 모바일 반응형 (태블릿 이하) */
+      @media (max-width: 900px) {
+        body {
+          padding: 10px;
+        }
+
+        .game-room {
+          display: flex;
+          flex-direction: column;
+          height: auto;
+          min-height: calc(100vh - 20px);
+          gap: 0;
+        }
+
+        .game-main {
+          flex: 1;
+          padding: 16px;
+          min-height: auto;
+          border-radius: 12px 12px 0 0;
+        }
+
+        /* 채팅 사이드바 - 하단 고정 (접힌 상태) */
+        .chat-sidebar {
+          height: auto;
+          border-radius: 0;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 100;
+          padding: 0;
+          background: #1e293b;
+        }
+
+        /* 접힌 상태에서 이모지, 입력창, 메시지 숨김 */
+        .chat-sidebar .chat-messages,
+        .chat-sidebar .emoji-buttons,
+        .chat-sidebar .chat-input-group {
+          display: none;
+        }
+
+        /* 펼친 상태 */
+        .chat-sidebar.expanded {
+          max-height: 50vh;
+          padding: 0 12px 12px 12px;
+        }
+
+        .chat-sidebar.expanded .chat-messages,
+        .chat-sidebar.expanded .emoji-buttons,
+        .chat-sidebar.expanded .chat-input-group {
+          display: flex;
+        }
+
+        .chat-toggle {
+          display: block !important;
+          border-radius: 8px 8px 0 0;
+          margin: 0;
+        }
+
+        .chat-sidebar.expanded .chat-messages {
+          max-height: 180px;
+          min-height: 100px;
+        }
+
+        .game-header {
+          flex-direction: column;
+          gap: 12px;
+          align-items: flex-start;
+        }
+
+        .game-header > div:first-child {
+          width: 100%;
+        }
+
+        .game-header h2 {
+          font-size: 1.25rem;
+        }
+
+        .game-stats {
+          width: 100%;
+          justify-content: space-around;
+          gap: 16px;
+        }
+
+        .stat-value {
+          font-size: 1.25rem;
+        }
+
+        .community-cards {
+          flex-wrap: wrap;
+          gap: 6px;
+          min-height: auto;
+          margin-bottom: 16px;
+        }
+
+        .card {
+          width: 50px;
+          height: 75px;
+          font-size: 0.9rem;
+        }
+
+        .players-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          margin-bottom: 60px;
+          /* 접힌 채팅창(토글버튼) 공간만 확보 */
+        }
+
+        .player-card {
+          padding: 10px;
+        }
+
+        .player-name {
+          font-size: 0.875rem;
+        }
+
+        .small-card {
+          width: 35px;
+          height: 52px;
+          font-size: 0.75rem;
+        }
+
+        .chip {
+          width: 34px;
+          height: 34px;
+          font-size: 0.8rem;
+        }
+
+        .emoji-buttons {
+          gap: 4px;
+          padding: 4px 0;
+        }
+
+        .emoji-btn {
+          width: 36px;
+          height: 36px;
+          font-size: 1.1rem;
+        }
+
+        .chat-input-group {
+          gap: 4px;
+        }
+
+        .chat-input-group input {
+          font-size: 14px;
+          padding: 8px 10px;
+        }
+
+        .chat-input-group button {
+          padding: 8px 12px;
+          font-size: 0.85rem;
+        }
+
+        .confirm-btn {
+          padding: 12px 24px;
+          font-size: 1rem;
+        }
+
+        /* 로비 */
+        .lobby-main {
+          padding: 16px;
+        }
+
+        .lobby-header {
+          flex-direction: column;
+          gap: 8px;
+          text-align: center;
+        }
+
+        .lobby-header h2 {
+          font-size: 1.5rem;
+        }
+
+        .room-creation {
+          padding: 16px;
+        }
+
+        .room-card {
+          padding: 12px;
+        }
+
+        .nickname-setup h1 {
+          font-size: 2rem;
+        }
+
+        .phase-indicator {
+          padding: 12px;
+          margin-bottom: 16px;
+        }
+
+        .phase-name {
+          font-size: 1.1rem;
+        }
+
+        .phase-desc {
+          font-size: 0.85rem;
+        }
+
+        /* 칩 선택 영역 */
+        .chip-selection-area {
+          padding: 10px;
+          margin-top: 8px;
+        }
+
+        .chip-selection-area h4 {
+          font-size: 0.75rem;
+        }
+      }
+
+      /* 더 작은 화면 (폰 세로) */
+      @media (max-width: 480px) {
+        .players-grid {
+          grid-template-columns: 1fr;
+          margin-bottom: 50px;
+        }
+
+        .card {
+          width: 42px;
+          height: 60px;
+          font-size: 0.8rem;
+        }
+
+        .chat-sidebar.expanded {
+          max-height: 45vh;
+        }
+
+        .chat-sidebar.expanded .chat-messages {
+          max-height: 120px;
+          min-height: 80px;
+        }
+
+        .emoji-btn {
+          width: 30px;
+          height: 30px;
+          font-size: 0.95rem;
+        }
+      }
+
+      .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .game-stats {
+        display: flex;
+        gap: 24px;
+      }
+
+      .stat {
+        text-align: center;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        margin-bottom: 4px;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      .stat-value.success {
+        color: #10b981;
+      }
+
+      .stat-value.danger {
+        color: #ef4444;
+      }
+
+      .phase-indicator {
+        text-align: center;
+        margin-bottom: 24px;
+        padding: 20px;
+        background: #0f172a;
+        border-radius: 8px;
+      }
+
+      .phase-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #fbbf24;
+        margin-bottom: 8px;
+      }
+
+      .phase-desc {
+        color: #94a3b8;
+      }
+
+      .community-cards {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 32px;
+        min-height: 140px;
+        align-items: center;
+      }
+
+      .card {
+        width: 80px;
+        height: 120px;
+        background: #fffef5;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        border: 1px solid #e2e8f0;
+      }
+
+      .card.back {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+        border: none;
+      }
+
+      .card.red {
+        color: #ef4444;
+      }
+
+      .card.black {
+        color: #1e293b;
+      }
+
+      .players-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .player-card {
+        background: #0f172a;
+        padding: 16px;
+        border-radius: 8px;
+        border: 2px solid #334155;
+      }
+
+      .player-card.current {
+        border-color: #fbbf24;
+      }
+
+      .player-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        /* margin-bottom: 12px; */
+      }
+
+      .player-name {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .player-name.bot::after {
+        content: '🤖';
+      }
+
+      .player-cards {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .small-card {
+        width: 50px;
+        height: 75px;
+        background: #fffef5;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: bold;
+        border: 1px solid #e2e8f0;
+      }
+
+      .small-card.red {
+        color: #ef4444;
+      }
+
+      .small-card.black {
+        color: #1e293b;
+      }
+
+      .small-card.back {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+        font-size: 0.75rem;
+        border: none;
+      }
+
+      .small-card-img {
+        width: 50px;
+        height: 75px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .small-card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 4px;
+      }
+
+      .chip-selection {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        font-size: 1rem;
+        font-weight: bold;
+      }
+
+      .chip:not(.selected):not(.disabled):hover {
+        transform: scale(1.1);
+      }
+
+      .chip.selected {
+        border-color: #fbbf24;
+        box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px #fbbf24;
+      }
+
+      .chip.clickable {
+        cursor: pointer;
+        animation: pulse 1.5s infinite;
+      }
+
+      .chip.clickable:hover {
+        transform: scale(1.15);
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      .chip[data-value='1'] {
+        background: #ef4444;
+        color: white;
+      }
+
+      .chip[data-value='2'] {
+        background: #f97316;
+        color: white;
+      }
+
+      .chip[data-value='3'] {
+        background: #fbbf24;
+        color: #0f172a;
+      }
+
+      .chip[data-value='4'] {
+        background: #10b981;
+        color: white;
+      }
+
+      .chip[data-value='5'] {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .chip[data-value='6'] {
+        background: #8b5cf6;
+        color: white;
+      }
+
+      /* Phase-specific chip colors */
+      /* 프리플랍: 하얀색 */
+      .phase-PRE_FLOP .chip[data-value='1'],
+      .phase-PRE_FLOP .chip[data-value='2'],
+      .phase-PRE_FLOP .chip[data-value='3'],
+      .phase-PRE_FLOP .chip[data-value='4'],
+      .phase-PRE_FLOP .chip[data-value='5'],
+      .phase-PRE_FLOP .chip[data-value='6'] {
+        background: #ffffff;
+        color: #1e293b;
+        border: 2px solid #94a3b8;
+      }
+
+      /* 플랍: 노란색 */
+      .phase-FLOP .chip[data-value='1'],
+      .phase-FLOP .chip[data-value='2'],
+      .phase-FLOP .chip[data-value='3'],
+      .phase-FLOP .chip[data-value='4'],
+      .phase-FLOP .chip[data-value='5'],
+      .phase-FLOP .chip[data-value='6'] {
+        background: #fbbf24;
+        color: #1e293b;
+      }
+
+      /* 턴: 주황색 */
+      .phase-TURN .chip[data-value='1'],
+      .phase-TURN .chip[data-value='2'],
+      .phase-TURN .chip[data-value='3'],
+      .phase-TURN .chip[data-value='4'],
+      .phase-TURN .chip[data-value='5'],
+      .phase-TURN .chip[data-value='6'] {
+        background: #f97316;
+        color: white;
+      }
+
+      /* 리버 & 쇼다운: 빨간색 */
+      .phase-RIVER .chip[data-value='1'],
+      .phase-RIVER .chip[data-value='2'],
+      .phase-RIVER .chip[data-value='3'],
+      .phase-RIVER .chip[data-value='4'],
+      .phase-RIVER .chip[data-value='5'],
+      .phase-RIVER .chip[data-value='6'],
+      .phase-SHOWDOWN .chip[data-value='1'],
+      .phase-SHOWDOWN .chip[data-value='2'],
+      .phase-SHOWDOWN .chip[data-value='3'],
+      .phase-SHOWDOWN .chip[data-value='4'],
+      .phase-SHOWDOWN .chip[data-value='5'],
+      .phase-SHOWDOWN .chip[data-value='6'] {
+        background: #ef4444;
+        color: white;
+      }
+
+      /* 결정완료 표시 스타일 */
+      .confirmed-badge {
+        background: #10b981;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+
+      .player-status {
+        margin-top: 8px;
+        font-size: 0.875rem;
+      }
+
+      .player-status.confirmed {
+        color: #10b981;
+      }
+
+      .player-status.waiting {
+        color: #94a3b8;
+      }
+
+      .hand-rank {
+        color: #fbbf24;
+        font-weight: bold;
+      }
+
+      /* 칩 영역 */
+      .chip-area {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* 칩 히스토리 */
+      .chip-history {
+        display: flex;
+        gap: 2px;
+      }
+
+      .chip-history-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 24px;
+        height: 32px;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        opacity: 0.7;
+      }
+
+      .chip-history-label {
+        font-size: 0.5rem;
+        color: #94a3b8;
+      }
+
+      .chip-history-value {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.7rem;
+      }
+
+      /* 히스토리 칩 색상 */
+      .chip-history-item.phase-PRE_FLOP .chip-history-value {
+        background: #ffffff;
+        color: #1e293b;
+        border: 1px solid #94a3b8;
+      }
+
+      .chip-history-item.phase-FLOP .chip-history-value {
+        background: #fbbf24;
+        color: #1e293b;
+      }
+
+      .chip-history-item.phase-TURN .chip-history-value {
+        background: #f97316;
+        color: white;
+      }
+
+      .chip-history-item.phase-RIVER .chip-history-value {
+        background: #ef4444;
+        color: white;
+      }
+
+      /* 현재 칩 크기 조정 */
+      .current-chip {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+      }
+
+      /* 숫자 선택 UI (홍체인식기 모드) */
+      .number-selection {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+      }
+
+      .number-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: #334155;
+        color: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+      }
+
+      .number-btn:hover:not(.disabled) {
+        background: #475569;
+        border-color: #8b5cf6;
+      }
+
+      .number-btn.selected {
+        background: #8b5cf6;
+        color: white;
+        border-color: #a78bfa;
+      }
+
+      .number-btn.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* 족보 선택 UI (지문인식기 모드) */
+      .rank-selection {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .rank-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: #334155;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+      }
+
+      .rank-btn:hover {
+        background: #475569;
+        border-color: #ef4444;
+      }
+
+      .rank-btn.selected {
+        background: #ef4444;
+        color: white;
+        border-color: #f87171;
+      }
+
+      .rank-number {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .rank-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      /* 팁 팝업 스타일 */
+      .tip-popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        cursor: pointer;
+      }
+
+      .tip-popup {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 2px solid #fbbf24;
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        animation: popIn 0.3s ease-out;
+      }
+
+      @keyframes popIn {
+        from {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .tip-popup h3 {
+        color: #fbbf24;
+        font-size: 1.25rem;
+        margin-bottom: 16px;
+        text-align: center;
+      }
+
+      .tip-popup-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .tip-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+      }
+
+      .tip-chip {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border: 2px solid #94a3b8;
+        flex-shrink: 0;
+      }
+
+      .tip-text {
+        color: #f1f5f9;
+        font-size: 0.9rem;
+      }
+
+      .tip-special {
+        background: rgba(251, 191, 36, 0.15);
+        border: 1px solid #fbbf24;
+      }
+
+      .tip-popup-footer {
+        margin-top: 16px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.8rem;
+      }
+
+      /* Chip selection area styling */
+      .chip-selection-area {
+        background: #0f172a;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 12px;
+        border: 2px solid #334155;
+      }
+
+      .chip-selection-area h4 {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        margin-bottom: 8px;
+      }
+
+      .chip.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      .chip.disabled:hover {
+        transform: none;
+      }
+
+      .game-actions {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      /* 결정 버튼 스타일 */
+      .confirm-btn {
+        padding: 16px 48px;
+        font-size: 1.25rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      }
+
+      .confirm-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      }
+
+      .confirm-btn:disabled {
+        background: #334155;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Modal */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: #1e293b;
+        padding: 32px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+      }
+
+      .modal-content h3 {
+        margin-bottom: 16px;
+        color: #fbbf24;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+
+      /* 칩 가져오기 힌트 */
+      .steal-hint {
+        color: #fbbf24;
+        font-size: 0.75rem;
+        text-align: right;
+        margin-bottom: 5px;
+      }
+
+      /* 모바일 세로 모드 최적화 */
+      @media screen and (max-width: 600px) {
+        body {
+          padding: 4px;
+        }
+
+        .game-room {
+          display: flex;
+          flex-direction: column;
+          height: auto;
+          min-height: 100vh;
+        }
+
+        .game-main {
+          flex: 1;
+          padding: 8px;
+          overflow-y: auto;
+        }
+
+        .game-header {
+          margin-bottom: 8px;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .game-header h2 {
+          font-size: 1rem;
+        }
+
+        .game-stats {
+          width: 100%;
+          justify-content: space-around;
+        }
+
+        .stat-label {
+          font-size: 0.65rem;
+        }
+
+        .stat-value {
+          font-size: 1rem;
+        }
+
+        .phase-indicator {
+          padding: 8px;
+          margin-bottom: 8px;
+        }
+
+        .phase-name {
+          font-size: 1rem;
+        }
+
+        .phase-desc {
+          font-size: 0.75rem;
+        }
+
+        .community-cards {
+          margin-bottom: 10px;
+          min-height: 70px;
+          gap: 6px;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .card {
+          width: 42px;
+          height: 63px;
+          font-size: 0.85rem;
+        }
+
+        .players-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+
+        .player-card {
+          padding: 8px;
+        }
+
+        .player-name {
+          font-size: 0.75rem;
+        }
+
+        .player-cards {
+          gap: 4px;
+        }
+
+        .small-card {
+          width: 30px;
+          height: 45px;
+          font-size: 0.7rem;
+        }
+
+        .chip,
+        .current-chip {
+          width: 28px;
+          height: 28px;
+          font-size: 0.75rem;
+        }
+
+        .chip-selection-area {
+          padding: 10px;
+        }
+
+        .chip-selection-area h4 {
+          font-size: 0.8rem;
+        }
+
+        .number-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 0.8rem;
+        }
+
+        .rank-selection {
+          max-height: 200px;
+        }
+
+        .rank-btn {
+          padding: 8px 10px;
+        }
+
+        .rank-name {
+          font-size: 0.75rem;
+        }
+
+        .confirm-btn {
+          padding: 12px 24px;
+          font-size: 1rem;
+          width: 100%;
+        }
+
+        /* 채팅 사이드바 - 하단 고정 */
+        .chat-sidebar {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: auto;
+          max-height: 40vh;
+          border-radius: 16px 16px 0 0;
+          padding: 8px;
+          z-index: 100;
+          transition: transform 0.3s ease;
+        }
+
+        .chat-sidebar:not(.expanded) {
+          transform: translateY(calc(100% - 40px));
+        }
+
+        .chat-sidebar.expanded {
+          transform: translateY(0);
+        }
+
+        .chat-toggle {
+          display: flex !important;
+          position: absolute;
+          top: 8px;
+          right: 8px;
+        }
+
+        .chat-messages {
+          max-height: 25vh;
+          font-size: 0.8rem;
+        }
+
+        .emoji-buttons {
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+
+        .emoji-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 1rem;
+        }
+
+        /* 게임 영역에 하단 여백 추가 (채팅 공간) */
+        .game-main {
+          padding-bottom: 50px;
+        }
+      }
+
+      /* 모바일 가로 모드 - 채팅 최소화 */
+      @media screen and (max-height: 500px) {
+        body {
+          padding: 4px;
+        }
+
+        .game-room {
+          display: grid;
+          grid-template-columns: 1fr 80px;
+          gap: 4px;
+          height: calc(100vh - 8px);
+        }
+
+        .game-main {
+          padding: 8px;
+          overflow-y: auto;
+        }
+
+        .game-header {
+          margin-bottom: 6px;
+          flex-direction: row;
+          align-items: center;
+        }
+
+        .game-header h2 {
+          font-size: 0.9rem;
+        }
+
+        .game-stats {
+          gap: 8px;
+        }
+
+        .stat-label {
+          font-size: 0.6rem;
+        }
+
+        .stat-value {
+          font-size: 0.9rem;
+        }
+
+        .phase-indicator {
+          padding: 6px;
+          margin-bottom: 6px;
+        }
+
+        .phase-name {
+          font-size: 0.9rem;
+          margin-bottom: 2px;
+        }
+
+        .phase-desc {
+          font-size: 0.65rem;
+        }
+
+        .community-cards {
+          margin-bottom: 8px;
+          min-height: 50px;
+          gap: 4px;
+        }
+
+        .card {
+          width: 35px;
+          height: 52px;
+          font-size: 0.7rem;
+        }
+
+        .players-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 4px;
+          margin-bottom: 6px;
+        }
+
+        .player-card {
+          padding: 4px;
+        }
+
+        .player-header {
+          margin-bottom: 2px;
+        }
+
+        .player-name {
+          font-size: 0.6rem;
+        }
+
+        .player-cards {
+          margin-bottom: 2px;
+          gap: 2px;
+        }
+
+        .small-card {
+          width: 24px;
+          height: 36px;
+          font-size: 0.55rem;
+        }
+
+        .chip,
+        .current-chip {
+          width: 22px;
+          height: 22px;
+          font-size: 0.6rem;
+        }
+
+        .chip-history-item {
+          width: 16px;
+          height: 20px;
+        }
+
+        .chip-history-value {
+          width: 12px;
+          height: 12px;
+          font-size: 0.5rem;
+        }
+
+        .chip-history-label {
+          font-size: 0.35rem;
+        }
+
+        .player-status {
+          font-size: 0.55rem;
+          margin-top: 2px;
+        }
+
+        .chip-selection-area {
+          padding: 6px;
+          margin-top: 4px;
+        }
+
+        .chip-selection-area h4 {
+          font-size: 0.6rem;
+          margin-bottom: 4px;
+        }
+
+        .chip-selection {
+          gap: 3px;
+        }
+
+        .number-selection {
+          gap: 3px;
+        }
+
+        .number-btn {
+          width: 26px;
+          height: 26px;
+          font-size: 0.65rem;
+        }
+
+        .rank-selection {
+          max-height: 120px;
+          gap: 3px;
+        }
+
+        .rank-btn {
+          padding: 4px 6px;
+          gap: 4px;
+        }
+
+        .rank-number {
+          font-size: 0.5rem;
+          padding: 2px 3px;
+          min-width: 24px;
+        }
+
+        .rank-name {
+          font-size: 0.6rem;
+        }
+
+        .game-actions {
+          margin-top: 6px;
+        }
+
+        .confirm-btn {
+          padding: 8px 16px;
+          font-size: 0.75rem;
+        }
+
+        /* 채팅 사이드바 - 오른쪽 최소화 */
+        .chat-sidebar {
+          padding: 4px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          width: 80px;
+          min-width: 80px;
+          max-width: 80px;
+          background: rgba(30, 41, 59, 0.95);
+        }
+
+        .chat-toggle {
+          display: none !important;
+        }
+
+        .chat-messages {
+          flex: 1;
+          margin-bottom: 4px;
+          font-size: 0.5rem;
+          overflow-y: auto;
+          max-height: calc(100vh - 100px);
+        }
+
+        .chat-message {
+          padding: 2px 4px;
+          word-break: break-all;
+        }
+
+        .chat-message .author {
+          font-size: 0.45rem;
+        }
+
+        .chat-message .text {
+          font-size: 0.5rem;
+        }
+
+        .emoji-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 2px;
+          margin-bottom: 4px;
+          justify-content: center;
+        }
+
+        .emoji-btn {
+          width: 20px;
+          height: 20px;
+          font-size: 0.65rem;
+          padding: 0;
+        }
+
+        .chat-input-group {
+          display: none;
+        }
+
+        .chat-input-group button {
+          padding: 6px 10px;
+          font-size: 0.75rem;
+        }
+
+        /* 팁 팝업 콤팩트 */
+        .tip-popup {
+          padding: 12px;
+          max-width: 350px;
+        }
+
+        .tip-popup h3 {
+          font-size: 0.9rem;
+          margin-bottom: 8px;
+        }
+
+        .tip-row {
+          padding: 4px 8px;
+          gap: 8px;
+        }
+
+        .tip-chip {
+          width: 24px;
+          height: 24px;
+          font-size: 0.7rem;
+        }
+
+        .tip-text {
+          font-size: 0.75rem;
+        }
+      }
+
+      /* 더 작은 가로 화면 */
+      @media screen and (max-height: 400px) {
+        .players-grid {
+          grid-template-columns: repeat(6, 1fr);
+        }
+
+        .player-cards {
+          display: none;
+        }
+
+        .player-card {
+          padding: 4px;
+        }
+
+        .community-cards {
+          display: none;
+        }
+
+        .game-header {
+          display: none;
+        }
+
+        .phase-indicator {
+          padding: 4px 8px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <script>window.BONGLE_ROOM_GAME = "gangster";</script>
+    <script src="../firebase/room-fetch.js"></script>
+    <script type="module">
+      import { recordResult } from "../js/rank.js";
+      window.bongleRecordMatch = async function (payload) {
+        try {
+          await recordResult({ gameId: payload.gameId, mode: "normal", won: !!payload.won, metric: payload.metric });
+        } catch (err) {
+          console.warn(err);
+        }
+      };
+    </script>
+    <div style="position:fixed;top:8px;right:8px;z-index:99999;display:flex;gap:8px">
+      <a href="../index.html" style="background:#111;color:#fff;padding:6px 10px;border-radius:8px;font-weight:800">홈</a>
+      <a href="../ranking.html?game=gangster" style="background:#111;color:#fff;padding:6px 10px;border-radius:8px;font-weight:800">랭킹</a>
+    </div>
+    <div class="container" id="app"></div>
+
+    <script>
+      // API 주소 (같은 폴더에 api.php가 있다고 가정)
+      const API_URL = 'api.php';
+      // ModSecurity 우회: API 요청 헬퍼 함수
+      async function apiPost(data) {
+        const params = new URLSearchParams();
+        for (const key in data) {
+          if (typeof data[key] === 'object') {
+            params.append(key, JSON.stringify(data[key]));
+          } else {
+            params.append(key, data[key]);
+          }
+        }
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        });
+        return response.json();
+      }
+
+      // Game State
+      let currentPlayerId = null;
+      let currentPlayerName = null;
+      let rooms = [];
+      let currentRoom = null;
+      let chatMessages = [];
+      let syncInterval = null;
+      let lastChatTimestamp = 0;
+      let isChatExpanded = false;
+
+      // ★ 소리 재생을 위한 이전 상태 저장
+      let previousGameState = {
+        phase: null,
+        playerChips: {}, // playerId: selectedChip
+        safesOpened: 0,
+        alarmsTriggered: 0,
+        showdownCalculated: false,
+      };
+
+      // 이모지 목록
+      const EMOJIS = [
+        { emoji: '🙏', name: '감사' },
+        { emoji: '😳', name: '당황' },
+        { emoji: '😠', name: '분노' },
+        { emoji: '😂', name: '웃김' },
+        { emoji: '😢', name: '슬픔' },
+        { emoji: '🚀', name: 'GO! 진행해' },
+        { emoji: '🛑', name: 'STOP! 멈춰' },
+      ];
+
+      // Initialize
+      async function init() {
+        loadPlayerFromLocal();
+        await loadRoomsFromServer();
+
+        if (!currentPlayerId) {
+          showNicknameSetup();
+          return;
+        }
+
+        // 마지막 방 ID가 있으면 자동 재입장 시도
+        const lastRoomId = localStorage.getItem('lastRoomId');
+        if (lastRoomId) {
+          console.log('마지막 방 재입장 시도:', lastRoomId);
+          const room = await getRoomFromServer(lastRoomId);
+          if (room && room.playerIds.includes(currentPlayerId)) {
+            console.log('방 재입장 성공');
+            currentRoom = room;
+            chatMessages = [];
+            lastChatTimestamp = 0;
+            await loadChatsFromServer(true);
+            showGameRoom();
+            return;
+          } else {
+            console.log('방을 찾을 수 없거나 플레이어가 방에 없음');
+            localStorage.removeItem('lastRoomId');
+          }
+        }
+
+        showLobby();
+      }
+
+      // 플레이어 정보는 localStorage에서 (개인 정보)
+      function loadPlayerFromLocal() {
+        currentPlayerId = localStorage.getItem('playerId');
+        currentPlayerName = localStorage.getItem('playerName');
+      }
+
+      function savePlayerToLocal() {
+        localStorage.setItem('playerId', currentPlayerId);
+        localStorage.setItem('playerName', currentPlayerName);
+      }
+
+      // 서버에서 방 목록 가져오기
+      async function loadRoomsFromServer() {
+        try {
+          const response = await fetch(API_URL);
+          const data = await response.json();
+          if (data.success) {
+            rooms = data.rooms || [];
+          }
+        } catch (e) {
+          console.error('서버 연결 실패:', e);
+          rooms = [];
+        }
+      }
+
+      // 서버에 방 저장
+      async function saveRoomToServer(room) {
+        try {
+          await apiPost({ action: 'updateRoom', room: room });
+        } catch (e) {
+          console.error('방 저장 실패:', e);
+        }
+      }
+
+      // 서버에서 특정 방 가져오기
+      async function getRoomFromServer(roomId) {
+        try {
+          const data = await apiPost({ action: 'getRoom', roomId: roomId });
+          return data.room;
+        } catch (e) {
+          console.error('방 가져오기 실패:', e);
+          return null;
+        }
+      }
+
+      // 서버에 방 생성
+      async function createRoomOnServer(room) {
+        try {
+          // ModSecurity 우회: URLSearchParams 사용
+          const params = new URLSearchParams();
+          params.append('action', 'createRoom');
+          params.append('room', JSON.stringify(room));
+
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString(),
+          });
+          const data = await response.json();
+          return data.success;
+        } catch (e) {
+          console.error('방 생성 실패:', e);
+          return false;
+        }
+      }
+
+      // 서버에서 방 삭제
+      async function deleteRoomFromServer(roomId) {
+        try {
+          await apiPost({ action: 'deleteRoom', roomId: roomId });
+        } catch (e) {
+          console.error('방 삭제 실패:', e);
+        }
+      }
+
+      // 서버에 채팅 전송
+      async function sendChatToServer(message, isSystem = false, isEmoji = false) {
+        if (!currentRoom) return;
+        try {
+          await apiPost({
+            action: 'sendChat',
+            roomId: currentRoom.id,
+            sender: currentPlayerName,
+            message: message,
+            isSystem: isSystem,
+            isEmoji: isEmoji,
+          });
+        } catch (e) {
+          console.error('채팅 전송 실패:', e);
+        }
+      }
+
+      // 서버에서 채팅 가져오기
+      async function loadChatsFromServer(loadAll = false) {
+        if (!currentRoom) return;
+        try {
+          const data = await apiPost({
+            action: 'getChats',
+            roomId: currentRoom.id,
+            since: loadAll ? 0 : lastChatTimestamp,
+          });
+          if (data.success && data.messages.length > 0) {
+            // 새 메시지 추가
+            data.messages.forEach((msg) => {
+              // 이미 있는 메시지인지 확인 (ID 기반)
+              if (chatMessages.find((m) => m.id === msg.id)) {
+                return;
+              }
+
+              // 같은 내용의 pending 메시지가 있으면 제거
+              const pendingIdx = chatMessages.findIndex(
+                (m) =>
+                  m.isPending &&
+                  m.sender === msg.sender &&
+                  m.message === msg.message &&
+                  Math.abs(m.timestamp - msg.timestamp) < 5,
+              );
+              if (pendingIdx !== -1) {
+                chatMessages.splice(pendingIdx, 1);
+              }
+
+              // 시스템 메시지 중복 체크 (내용+시간 기반)
+              if (msg.isSystem) {
+                const duplicateIdx = chatMessages.findIndex(
+                  (m) =>
+                    m.isSystem &&
+                    m.message === msg.message &&
+                    Math.abs(m.timestamp - msg.timestamp) < 5,
+                );
+                if (duplicateIdx !== -1) {
+                  // 이미 로컬에 있는 메시지면 스킵
+                  return;
+                }
+              }
+
+              chatMessages.push(msg);
+              if (msg.timestamp > lastChatTimestamp) {
+                lastChatTimestamp = msg.timestamp;
+              }
+            });
+            renderChat();
+          }
+        } catch (e) {
+          console.error('채팅 로드 실패:', e);
+        }
+      }
+
+      // 주기적 동기화 시작
+      function startSync() {
+        if (syncInterval) clearInterval(syncInterval);
+        syncInterval = setInterval(async () => {
+          if (currentRoom) {
+            const serverRoom = await getRoomFromServer(currentRoom.id);
+            if (serverRoom) {
+              // 서버 데이터로 업데이트 (현재 화면 상태 유지를 위해 조건부)
+              const needsUpdate = JSON.stringify(currentRoom) !== JSON.stringify(serverRoom);
+              currentRoom = serverRoom;
+              const roomIndex = rooms.findIndex((r) => r.id === serverRoom.id);
+              if (roomIndex >= 0) {
+                rooms[roomIndex] = serverRoom;
+              }
+              if (needsUpdate) {
+                showGameRoom();
+              }
+              // 쇼다운에서 모든 플레이어 결정 여부를 주기적으로 확인 (호스트만)
+              if (
+                currentRoom &&
+                currentRoom.gameState &&
+                currentRoom.gameState.phase === 'SHOWDOWN' &&
+                !currentRoom.gameState.showdownCalculated &&
+                currentRoom.hostId === currentPlayerId
+              ) {
+                checkShowdownConfirmed();
+              }
+              // 채팅 동기화
+              await loadChatsFromServer();
+            } else {
+              // 방이 삭제됨
+              alert('방이 삭제되었습니다.');
+              currentRoom = null;
+              showLobby();
+            }
+          } else {
+            await loadRoomsFromServer();
+            const list = document.getElementById('roomList');
+            if (list) renderRoomList();
+          }
+        }, 1000); // 1초마다 동기화
+      }
+
+      // 동기화 중지
+      function stopSync() {
+        if (syncInterval) {
+          clearInterval(syncInterval);
+          syncInterval = null;
+        }
+      }
+
+      // 기존 saveToStorage 대체 (현재 방 저장)
+      async function saveToStorage() {
+        savePlayerToLocal();
+        if (currentRoom) {
+          await saveRoomToServer(currentRoom);
+        }
+      }
+
+      // Generate unique ID
+      function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+      }
+
+      // 사운드 효과 재생
+      let soundEnabled = false;
+      const sounds = {};
+
+      // 사운드 초기화 (사용자 상호작용 시 호출)
+      function initSounds() {
+        if (soundEnabled) return;
+        sounds.card = new Audio('sound/card.mp3');
+        sounds.start = new Audio('sound/start.mp3');
+        sounds.fail = new Audio('sound/fail.mp3');
+        sounds.success = new Audio('sound/success.mp3');
+        sounds.chip = new Audio('sound/chip.mp3');
+
+        // 볼륨 설정 및 프리로드
+        Object.values(sounds).forEach((s) => {
+          s.volume = 0.5;
+          s.preload = 'auto';
+          s.load();
+        });
+        soundEnabled = true;
+        console.log('사운드 초기화 완료');
+      }
+
+      // 페이지 클릭 시 사운드 활성화
+      document.addEventListener('click', initSounds, { once: true });
+      document.addEventListener('touchstart', initSounds, { once: true });
+
+      function playSound(type) {
+        // 사운드 미초기화시 초기화 시도
+        if (!soundEnabled) {
+          initSounds();
+        }
+        try {
+          const sound = sounds[type];
+          if (sound) {
+            // 직접 재생 시도
+            sound.currentTime = 0;
+            sound.volume = 0.5;
+            const playPromise = sound.play();
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {})
+                .catch((e) => {
+                  // 실패 시 새 인스턴스로 재시도
+                  const newAudio = new Audio(sound.src);
+                  newAudio.volume = 0.5;
+                  newAudio.play().catch((e2) => {});
+                });
+            }
+          }
+        } catch (e) {}
+      }
+
+      // ★ 상태 변화 감지하여 소리 재생
+      function detectAndPlaySounds(gs) {
+        if (!gs) return;
+
+        // 1. 페이즈 변경 시 카드 소리 (PRE_FLOP, FLOP, TURN, RIVER, SHOWDOWN)
+        const cardPhases = ['PRE_FLOP', 'FLOP', 'TURN', 'RIVER', 'SHOWDOWN'];
+        if (previousGameState.phase !== gs.phase && cardPhases.includes(gs.phase)) {
+          playSound('card');
+        }
+
+        // 2. 칩 선택/교환 소리 (플레이어의 selectedChip 변경 감지)
+        gs.players.forEach((player) => {
+          const prevChip = previousGameState.playerChips[player.id];
+          const currentChip = player.selectedChip;
+
+          // 칩이 null → 숫자 또는 숫자 → 다른 숫자로 변경된 경우
+          if (prevChip !== currentChip && currentChip !== null) {
+            playSound('chip');
+          }
+
+          // 현재 상태 저장
+          previousGameState.playerChips[player.id] = currentChip;
+        });
+
+        // 3. 성공/실패 소리 (쇼다운 결과 계산 완료 시)
+        if (
+          !previousGameState.showdownCalculated &&
+          gs.showdownCalculated &&
+          gs.phase === 'SHOWDOWN'
+        ) {
+          // safesOpened 또는 alarmsTriggered 증가 감지
+          if (gs.safesOpened > previousGameState.safesOpened) {
+            playSound('success');
+          } else if (gs.alarmsTriggered > previousGameState.alarmsTriggered) {
+            playSound('fail');
+          }
+        }
+
+        // 현재 상태를 이전 상태로 저장
+        previousGameState.phase = gs.phase;
+        previousGameState.safesOpened = gs.safesOpened || 0;
+        previousGameState.alarmsTriggered = gs.alarmsTriggered || 0;
+        previousGameState.showdownCalculated = gs.showdownCalculated || false;
+      }
+
+      // 게임 진행 중인지 확인 (프리플랍~리버)
+      function isGameInProgress() {
+        if (!currentRoom || !currentRoom.gameState) return false;
+        const phase = currentRoom.gameState.phase;
+        return ['PRE_FLOP', 'FLOP', 'TURN', 'RIVER'].includes(phase);
+      }
+
+      // 대기 모드인지 확인 (게임 시작 전, 쇼다운 후)
+      function isWaitingMode() {
+        if (!currentRoom) return true;
+        if (!currentRoom.gameState) return true;
+        return currentRoom.gameState.phase === 'SHOWDOWN';
+      }
+
+      // 프리플랍 팁 팝업 표시
+      function showPreFlopTip() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        const gs = currentRoom.gameState;
+        const playerCount = gs.players.length;
+        const currentPlayer = gs.players.find((p) => p.id === currentPlayerId);
+
+        // 봇이거나 현재 플레이어가 없으면 표시 안함
+        if (!currentPlayer || currentPlayer.isBot) return;
+
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+
+        // 모드 이름 조합
+        let modeName = cardMode === 'securityCam' ? '📹 보안카메라 (3장)' : '🎰 스탠다드 (2장)';
+        if (extraMode === 'irisScanner') modeName += ' + 👁️ 홍체인식기';
+        if (extraMode === 'fingerprint') modeName += ' + 👆 지문인식기';
+
+        // 설명
+        let modeDesc = '가장 높은 칩을 선택한 사람이 실제로 1등이면 금고!';
+        if (extraMode === 'irisScanner')
+          modeDesc = '1등의 카드 숫자를 맞추세요! 과반수가 맞으면 금고!';
+        if (extraMode === 'fingerprint')
+          modeDesc = '1등의 족보(조합)를 맞추세요! 과반수가 맞으면 금고!';
+
+        // 내 카드 분석해서 맞춤 팁 생성
+        const myHand = currentPlayer.hand;
+        const recommendedChip = analyzeHandForTip(myHand, playerCount);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'tip-popup-overlay';
+        overlay.onclick = () => overlay.remove();
+
+        overlay.innerHTML = `
+          <div class="tip-popup" onclick="event.stopPropagation()">
+            <h3>💡 ${modeName} (${playerCount}인)</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 12px; text-align: center;">${modeDesc}</p>
+
+            <div style="background: rgba(251, 191, 36, 0.2); border: 2px solid #fbbf24; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: center;">
+              <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px;">📋 내 카드</div>
+              <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 12px;">
+                ${myHand
+                  .map(
+                    (card) => `
+                  <div style="background: white; border-radius: 4px; padding: 8px 12px; color: ${
+                    card.suit === '♥' || card.suit === '♦' ? '#ef4444' : '#1e293b'
+                  }; font-weight: bold;">
+                    ${card.rank}${card.suit}
+                  </div>
+                `,
+                  )
+                  .join('')}
+              </div>
+              <div style="font-size: 1.5rem; font-weight: bold; color: #fbbf24; margin-bottom: 4px;">
+                추천 칩: ${recommendedChip.chip}번
+              </div>
+              <div style="font-size: 0.9rem; color: #f1f5f9;">
+                ${recommendedChip.reason}
+              </div>
+            </div>
+
+            <div class="tip-popup-footer">
+              화면을 터치하면 닫힙니다
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+      }
+
+      // 핸드 분석해서 추천 칩 반환
+      function analyzeHandForTip(hand, playerCount) {
+        const rankOrder = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const getCardValue = (rank) => rankOrder.indexOf(rank) + 2;
+
+        // 카드 값 추출
+        const values = hand.map((c) => getCardValue(c.rank)).sort((a, b) => b - a);
+        const highCard = values[0];
+        const ranks = hand.map((c) => c.rank);
+        const suits = hand.map((c) => c.suit);
+
+        // 원페어 체크
+        const hasPair = ranks.length !== new Set(ranks).size;
+
+        // 같은 무늬 체크
+        const sameSuit = suits.every((s) => s === suits[0]);
+
+        // 연속 체크 (스트레이트 가능성)
+        const sortedValues = [...values].sort((a, b) => a - b);
+        const isConnected =
+          sortedValues.length >= 2 &&
+          sortedValues[sortedValues.length - 1] - sortedValues[0] <= hand.length;
+
+        // 추천 로직
+        let chip = 1;
+        let reason = '';
+
+        if (hasPair) {
+          chip = playerCount;
+          reason = `원페어! 가장 높은 칩 추천`;
+        } else if (highCard === 14) {
+          // A
+          chip = playerCount;
+          reason = `A 보유! 가장 높은 칩 추천`;
+        } else if (highCard === 13) {
+          // K
+          chip = Math.max(1, playerCount - 1);
+          reason = `K 보유! ${chip}번 칩 추천`;
+        } else if (highCard === 12) {
+          // Q
+          chip = Math.max(1, playerCount - 2);
+          reason = `Q 보유! ${chip}번 칩 추천`;
+        } else if (highCard >= 10) {
+          // 10, J
+          chip = Math.ceil(playerCount / 2);
+          reason = `${rankOrder[highCard - 2]} 보유! 중간 칩 추천`;
+        } else if (highCard >= 7) {
+          // 7~9
+          chip = Math.max(1, Math.floor(playerCount / 3));
+          reason = `중간 카드! 낮은 칩 추천`;
+        } else {
+          // 2~6
+          chip = 1;
+          reason = `낮은 카드! 1번 칩 추천`;
+        }
+
+        // 추가 보너스 요소
+        if (sameSuit && hand.length >= 2) {
+          reason += ' (같은 무늬 - 플러시 가능성)';
+        }
+        if (isConnected) {
+          reason += ' (스트레이트 가능성)';
+        }
+
+        return { chip: Math.min(chip, playerCount), reason };
+      }
+
+      // 인원수/모드별 칩 선택 팁 생성
+      function getChipTips(playerCount, extraMode, cardMode) {
+        if (extraMode === 'faceRecognition') {
+          const cardCount = cardMode === 'securityCam' ? 3 : 2;
+          return [
+            {
+              chip: '😀',
+              text: `1등 플레이어의 카드 숫자 ${cardCount}개 전부 맞추세요!`,
+              special: true,
+            },
+            { chip: '📊', text: '과반수 이상이 전부 맞추면 금고 성공!', special: false },
+            { chip: '🎯', text: '2~A 중에서 선택 가능', special: false },
+          ];
+        }
+
+        if (extraMode === 'irisScanner') {
+          return [
+            {
+              chip: '👁️',
+              text: `1등 플레이어의 카드 숫자 중 1개만 맞추세요!`,
+              special: true,
+            },
+            { chip: '📊', text: '과반수 이상이 1개라도 맞추면 금고 성공!', special: false },
+            { chip: '🎯', text: '2~A 중에서 선택 가능', special: false },
+          ];
+        }
+
+        if (extraMode === 'fingerprint') {
+          return [
+            { chip: '1위', text: '로열 스트레이트 플러시', special: true },
+            { chip: '2위', text: '스트레이트 플러시', special: false },
+            { chip: '3위', text: '포카드', special: false },
+            { chip: '4위', text: '풀하우스', special: false },
+            { chip: '5위', text: '플러시', special: false },
+            { chip: '6위', text: '스트레이트', special: false },
+            { chip: '7위', text: '트리플', special: false },
+            { chip: '8위', text: '투페어', special: false },
+            { chip: '9위', text: '원페어', special: false },
+            { chip: '10위', text: '하이카드', special: false },
+          ];
+        }
+
+        // 스탠다드/보안카메라 모드
+        switch (playerCount) {
+          case 3:
+            return [
+              { chip: 1, text: '카드가 2~7 사이일 때', special: false },
+              { chip: 2, text: '카드가 8~J 사이일 때', special: false },
+              { chip: 3, text: 'Q~A 카드 또는 원페어일 때', special: true },
+            ];
+          case 4:
+            return [
+              { chip: 1, text: '카드가 2~6 사이일 때', special: false },
+              { chip: 2, text: '카드가 7~10 사이일 때', special: false },
+              { chip: 3, text: '카드가 J~K 사이일 때', special: false },
+              { chip: 4, text: 'A 카드 또는 원페어일 때', special: true },
+            ];
+          case 5:
+            return [
+              { chip: 1, text: '카드가 2~6 사이일 때', special: false },
+              { chip: 2, text: '카드가 7~9 사이일 때', special: false },
+              { chip: 3, text: '카드가 10~J 사이일 때', special: false },
+              { chip: 4, text: '카드가 Q~K 사이일 때', special: false },
+              { chip: 5, text: 'A 카드 또는 원페어일 때', special: true },
+            ];
+          case 6:
+          default:
+            return [
+              { chip: 1, text: '카드가 2~6 사이일 때', special: false },
+              { chip: 2, text: '카드가 7~9 사이일 때', special: false },
+              { chip: 3, text: '카드가 10~J 사이일 때', special: false },
+              { chip: 4, text: 'Q 카드가 있을 때', special: false },
+              { chip: 5, text: 'K 카드가 있을 때', special: false },
+              { chip: 6, text: 'A 카드 또는 원페어일 때', special: true },
+            ];
+        }
+      }
+
+      // Nickname Setup
+      function showNicknameSetup() {
+        const app = document.getElementById('app');
+        app.innerHTML = `
+        <div class="nickname-setup">
+          <h1>🎰 갱스터</h1>
+          <p style="color: #94a3b8; font-size: 1.125rem;">닉네임을 입력하세요</p>
+          <div class="input-group">
+            <input type="text" id="nicknameInput" placeholder="닉네임" maxlength="20" />
+            <button onclick="setNickname()">시작하기</button>
+          </div>
+        </div>
+      `;
+        document.getElementById('nicknameInput').focus();
+        document.getElementById('nicknameInput').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') setNickname();
+        });
+      }
+
+      function setNickname() {
+        const input = document.getElementById('nicknameInput');
+        const nickname = input.value.trim();
+        if (nickname) {
+          currentPlayerId = generateId();
+          currentPlayerName = nickname;
+          localStorage.setItem('bongle_nick', nickname);
+          savePlayerToLocal();
+          showLobby();
+        }
+      }
+
+      // Change Nickname
+      async function changeNickname() {
+        const newName = prompt('새로운 닉네임을 입력하세요:', currentPlayerName);
+        if (newName && newName.trim()) {
+          currentPlayerName = newName.trim();
+          savePlayerToLocal();
+          if (currentRoom) {
+            const player = currentRoom.players.find((p) => p.id === currentPlayerId);
+            if (player) {
+              player.name = currentPlayerName;
+              await saveToStorage();
+            }
+            showGameRoom();
+          } else {
+            showLobby();
+          }
+        }
+      }
+
+      // Lobby - 채팅창 제거됨
+      async function showLobby() {
+        currentRoom = null;
+        chatMessages = [];
+
+        // 서버에서 최신 방 목록 가져오기
+        await loadRoomsFromServer();
+
+        // 동기화 시작
+        startSync();
+
+        const app = document.getElementById('app');
+        app.innerHTML = `
+        <div class="lobby">
+          <div class="lobby-main">
+            <div class="lobby-header">
+              <h2>🎰 게임 로비</h2>
+              <div class="welcome" onclick="changeNickname()">
+                환영합니다, <span class="welcome-name">${currentPlayerName}</span>님
+              </div>
+            </div>
+
+            <div class="room-creation">
+              <h3>새 방 만들기</h3>
+              <div class="room-form">
+                <input type="text" id="roomNameInput" placeholder="방 이름" maxlength="30" />
+
+                <div class="room-options-row">
+                  <div class="option-group">
+                    <div class="checkbox-group">
+                      <input type="checkbox" id="privateCheckbox" />
+                      <label for="privateCheckbox">🔒 비밀방</label>
+                    </div>
+                    <input type="password" id="passwordInput" placeholder="비밀번호" class="hidden" style="margin-top: 6px;" />
+                  </div>
+
+                  <div class="option-group">
+                    <span class="option-label">🃏 카드 수</span>
+                    <div class="mode-checkboxes">
+                      <label class="mode-check">
+                        <input type="checkbox" id="modeStandard" checked onchange="validateCardMode(this, 'standard')" />
+                        <span>2장</span>
+                      </label>
+                      <label class="mode-check">
+                        <input type="checkbox" id="modeSecurityCam" onchange="validateCardMode(this, 'securityCam')" />
+                        <span>3장</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="option-group">
+                    <span class="option-label">🎯 추가 모드</span>
+                    <div class="mode-checkboxes">
+                      <label class="mode-check">
+                        <input type="checkbox" id="modeFace" onchange="validateExtraMode(this, 'face')" />
+                        <span>😀 얼굴</span>
+                      </label>
+                      <label class="mode-check">
+                        <input type="checkbox" id="modeIris" onchange="validateExtraMode(this, 'iris')" />
+                        <span>👁️ 홍체</span>
+                      </label>
+                      <label class="mode-check">
+                        <input type="checkbox" id="modeFingerprint" onchange="validateExtraMode(this, 'fingerprint')" />
+                        <span>👆 지문</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="modePreview" class="mode-preview">📋 모드: 스탠다드 (2장)</div>
+
+                <button onclick="createRoom()">방 만들기</button>
+              </div>
+            </div>
+
+            <h3 style="margin-bottom: 16px;">방 목록 <button class="secondary" style="padding: 4px 12px; font-size: 0.875rem;" onclick="refreshRoomList()">🔄 새로고침</button></h3>
+            <div class="room-list" id="roomList"></div>
+          </div>
+        </div>
+      `;
+
+        document.getElementById('privateCheckbox').addEventListener('change', (e) => {
+          document.getElementById('passwordInput').classList.toggle('hidden', !e.target.checked);
+        });
+
+        updateModePreview();
+        renderRoomList();
+      }
+
+      // 카드 모드 검증 (2장/3장 중 하나만 선택)
+      function validateCardMode(checkbox, mode) {
+        const standard = document.getElementById('modeStandard');
+        const securityCam = document.getElementById('modeSecurityCam');
+
+        if (mode === 'standard' && checkbox.checked) {
+          securityCam.checked = false;
+        } else if (mode === 'securityCam' && checkbox.checked) {
+          standard.checked = false;
+        }
+
+        // 둘 다 체크 안됐으면 기본값으로
+        if (!standard.checked && !securityCam.checked) {
+          standard.checked = true;
+        }
+
+        updateModePreview();
+      }
+
+      // 추가 모드 검증 (얼굴/홍체/지문 중 하나만 선택)
+      function validateExtraMode(checkbox, mode) {
+        const face = document.getElementById('modeFace');
+        const iris = document.getElementById('modeIris');
+        const fingerprint = document.getElementById('modeFingerprint');
+
+        if (checkbox.checked) {
+          // 다른 모드 해제
+          if (mode === 'face') {
+            iris.checked = false;
+            fingerprint.checked = false;
+          } else if (mode === 'iris') {
+            face.checked = false;
+            fingerprint.checked = false;
+          } else if (mode === 'fingerprint') {
+            face.checked = false;
+            iris.checked = false;
+          }
+        }
+
+        updateModePreview();
+      }
+
+      // 모드 미리보기 업데이트
+      function updateModePreview() {
+        const standard = document.getElementById('modeStandard')?.checked;
+        const securityCam = document.getElementById('modeSecurityCam')?.checked;
+        const face = document.getElementById('modeFace')?.checked;
+        const iris = document.getElementById('modeIris')?.checked;
+        const fingerprint = document.getElementById('modeFingerprint')?.checked;
+
+        const preview = document.getElementById('modePreview');
+        if (!preview) return;
+
+        let cardMode = standard ? '스탠다드 (2장)' : '보안카메라 (3장)';
+        let extraMode = '';
+        if (face) extraMode = ' + 얼굴인식 (숫자 전부)';
+        if (iris) extraMode = ' + 홍체인식 (숫자 하나)';
+        if (fingerprint) extraMode = ' + 지문인식 (족보)';
+
+        preview.textContent = '📋 모드: ' + cardMode + extraMode;
+      }
+
+      // 방 목록 새로고침
+      async function refreshRoomList() {
+        await loadRoomsFromServer();
+        renderRoomList();
+      }
+
+      async function createRoom() {
+        const nameInput = document.getElementById('roomNameInput');
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        const isPrivate = document.getElementById('privateCheckbox').checked;
+        const password = isPrivate ? document.getElementById('passwordInput').value : null;
+
+        // 모드 조합 결정
+        const isSecurityCam = document.getElementById('modeSecurityCam').checked;
+        const isFace = document.getElementById('modeFace').checked;
+        const isIris = document.getElementById('modeIris').checked;
+        const isFingerprint = document.getElementById('modeFingerprint').checked;
+
+        // 카드 모드 (2장 또는 3장)
+        const cardMode = isSecurityCam ? 'securityCam' : 'standard';
+        // 추가 모드 (얼굴/홍체/지문, 없으면 null)
+        const extraMode = isFace
+          ? 'faceRecognition'
+          : isIris
+          ? 'irisScanner'
+          : isFingerprint
+          ? 'fingerprint'
+          : null;
+
+        const room = {
+          id: generateId(),
+          name: name,
+          hostId: currentPlayerId,
+          isPrivate: isPrivate,
+          password: password,
+          cardMode: cardMode,
+          extraMode: extraMode,
+          gameMode: extraMode || cardMode, // 호환성을 위해 유지
+          playerIds: [currentPlayerId],
+          players: [
+            {
+              id: currentPlayerId,
+              name: currentPlayerName,
+              isBot: false,
+            },
+          ],
+          gameState: null,
+        };
+
+        // 서버에 방 생성
+        const success = await createRoomOnServer(room);
+        if (success) {
+          rooms.push(room);
+          currentRoom = room;
+          // 채팅 초기화
+          chatMessages = [];
+          lastChatTimestamp = 0;
+          showGameRoom();
+        } else {
+          alert('방 생성에 실패했습니다.');
+        }
+      }
+
+      function renderRoomList() {
+        const list = document.getElementById('roomList');
+        if (rooms.length === 0) {
+          list.innerHTML =
+            '<p style="color: #94a3b8; text-align: center;">생성된 방이 없습니다</p>';
+          return;
+        }
+
+        list.innerHTML = rooms
+          .map(
+            (room) => `
+        <div class="room-card">
+          <div class="room-header">
+            <div class="room-name">
+              ${room.name}
+              ${getModesBadges(room)}
+            </div>
+            <span class="badge ${room.isPrivate ? 'locked' : 'open'}">
+              ${room.isPrivate ? '🔒' : '🔓'}
+            </span>
+          </div>
+          <div class="room-info">
+            방장: ${room.players.find((p) => p.id === room.hostId)?.name || '알 수 없음'} |
+            인원: ${room.playerIds.length}/6
+          </div>
+          <div class="room-actions">
+            <button onclick="joinRoom('${room.id}')">입장</button>
+            <button class="secondary" onclick="copyInviteLink('${room.id}')">초대 링크</button>
+          </div>
+        </div>
+      `,
+          )
+          .join('');
+      }
+
+      // 모드 뱃지 생성 함수
+      function getModesBadges(room) {
+        const cardMode = room.cardMode || room.gameMode || 'standard';
+        const extraMode =
+          room.extraMode ||
+          (room.gameMode === 'faceRecognition' ||
+          room.gameMode === 'irisScanner' ||
+          room.gameMode === 'fingerprint'
+            ? room.gameMode
+            : null);
+
+        let badges = '';
+
+        // 카드 모드 뱃지
+        if (cardMode === 'securityCam') {
+          badges += '<span class="mode-badge securityCam">3장</span>';
+        } else {
+          badges += '<span class="mode-badge standard">2장</span>';
+        }
+
+        // 추가 모드 뱃지
+        if (extraMode === 'faceRecognition') {
+          badges += '<span class="mode-badge faceRecognition">😀</span>';
+        } else if (extraMode === 'irisScanner') {
+          badges += '<span class="mode-badge irisScanner">👁️</span>';
+        } else if (extraMode === 'fingerprint') {
+          badges += '<span class="mode-badge fingerprint">👆</span>';
+        }
+
+        return badges;
+      }
+
+      async function joinRoom(roomId) {
+        // 서버에서 최신 방 정보 가져오기
+        const room = await getRoomFromServer(roomId);
+        if (!room) {
+          alert('방을 찾을 수 없습니다.');
+          await refreshRoomList();
+          return;
+        }
+
+        let password = '';
+        if (room.isPrivate) {
+          password = prompt('비밀번호를 입력하세요:');
+          if (password === null) return; // 취소
+        }
+
+        // 서버에 참가 요청
+        try {
+          const data = await apiPost({
+            action: 'joinRoom',
+            roomId: roomId,
+            playerId: currentPlayerId,
+            playerName: currentPlayerName,
+            password: password,
+          });
+
+          if (!data.success) {
+            if (data.error === 'Wrong password') {
+              alert('비밀번호가 틀렸습니다.');
+            } else if (data.error === 'Room is full') {
+              alert('방이 가득 찼습니다.');
+            } else {
+              alert('방 입장에 실패했습니다: ' + data.error);
+            }
+            return;
+          }
+
+          currentRoom = data.room;
+          // 마지막 방 ID 저장 (재입장용)
+          localStorage.setItem('lastRoomId', roomId);
+          // 채팅 초기화
+          chatMessages = [];
+          lastChatTimestamp = 0;
+          // 서버에서 기존 채팅 로드 (전체)
+          await loadChatsFromServer(true);
+          showGameRoom();
+        } catch (e) {
+          console.error('방 입장 실패:', e);
+          alert('서버 연결에 실패했습니다.');
+        }
+      }
+
+      function copyInviteLink(roomId) {
+        const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+        navigator.clipboard.writeText(link).then(() => {
+          alert('초대 링크가 복사되었습니다!');
+        });
+      }
+
+      // Chat
+      function sendMessage() {
+        const input = document.getElementById('chatInput');
+        if (!input) return;
+
+        // 게임 진행 중이면 일반 채팅 불가
+        if (isGameInProgress()) {
+          return;
+        }
+
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Bot commands
+        if (currentRoom && message.startsWith('/봇추가 ')) {
+          const botName = message.substring(5).trim();
+          addBot(botName);
+          input.value = '';
+          return;
+        }
+
+        if (currentRoom && message.startsWith('/봇제거 ')) {
+          const botName = message.substring(5).trim();
+          removeBot(botName);
+          input.value = '';
+          return;
+        }
+
+        // 서버에 채팅 전송
+        sendChatToServer(message, false, false);
+
+        // 로컬에도 즉시 추가 (빠른 피드백) - pending 상태로
+        const tempId = 'pending_' + Date.now();
+        chatMessages.push({
+          id: tempId,
+          sender: currentPlayerName,
+          message: message,
+          isSystem: false,
+          isEmoji: false,
+          timestamp: Math.floor(Date.now() / 1000),
+          isPending: true,
+        });
+
+        input.value = '';
+        renderChat();
+      }
+
+      // 이모지 보내기
+      function sendEmoji(emoji) {
+        // 서버에 채팅 전송
+        sendChatToServer(emoji, false, true);
+
+        // 로컬에도 즉시 추가 - pending 상태로
+        const tempId = 'pending_' + Date.now();
+        chatMessages.push({
+          id: tempId,
+          sender: currentPlayerName,
+          message: emoji,
+          isSystem: false,
+          isEmoji: true,
+          timestamp: Math.floor(Date.now() / 1000),
+          isPending: true,
+        });
+        renderChat();
+      }
+
+      let lastSystemMessage = '';
+      let lastSystemMessageTime = 0;
+
+      function addSystemMessage(message, broadcastToOthers = false) {
+        // 중복 메시지 필터링 (2초 내 동일 메시지 무시)
+        const now = Date.now();
+        if (message === lastSystemMessage && now - lastSystemMessageTime < 2000) {
+          return;
+        }
+        lastSystemMessage = message;
+        lastSystemMessageTime = now;
+
+        // 시스템 메시지는 호스트만 서버에 전송 (중복 방지)
+        if (currentRoom && broadcastToOthers && currentRoom.hostId === currentPlayerId) {
+          console.log('서버로 시스템 메시지 전송:', message);
+          sendChatToServer(message, true, false);
+        }
+
+        // 로컬에 바로 추가 (본인 화면에 즉시 표시)
+        const msgId = Date.now().toString() + Math.random();
+        chatMessages.push({
+          id: msgId,
+          sender: 'System',
+          message: message,
+          isSystem: true,
+          isEmoji: false,
+          timestamp: Math.floor(Date.now() / 1000),
+        });
+        renderChat();
+      }
+
+      function renderChat() {
+        const chatDiv = document.getElementById('chatMessages');
+        if (!chatDiv) return;
+
+        chatDiv.innerHTML = chatMessages
+          .map(
+            (msg) => `
+        <div class="chat-message ${msg.isSystem ? 'system' : ''} ${msg.isEmoji ? 'emoji' : ''}">
+          ${!msg.isSystem && !msg.isEmoji ? `<span class="chat-sender">${msg.sender}:</span>` : ''}
+          ${
+            msg.isEmoji
+              ? `<span class="chat-sender" style="font-size: 0.875rem;">${msg.sender}</span> ${msg.message}`
+              : msg.message
+          }
+        </div>
+      `,
+          )
+          .join('');
+
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+      }
+
+      // Bot Management
+      function addBot(botName) {
+        if (!currentRoom) return;
+        if (!botName) {
+          addSystemMessage('봇 이름을 입력해주세요.');
+          return;
+        }
+
+        if (currentRoom.playerIds.length >= 6) {
+          addSystemMessage('방이 가득 찼습니다.');
+          return;
+        }
+
+        const botId = 'bot_' + generateId();
+        currentRoom.playerIds.push(botId);
+        currentRoom.players.push({
+          id: botId,
+          name: botName,
+          isBot: true,
+        });
+
+        saveToStorage();
+        addSystemMessage(`봇 "${botName}"이 추가되었습니다.`);
+        showGameRoom();
+      }
+
+      function removeBot(botName) {
+        if (!currentRoom) return;
+
+        const botIndex = currentRoom.players.findIndex((p) => p.isBot && p.name === botName);
+        if (botIndex === -1) {
+          addSystemMessage(`봇 "${botName}"을 찾을 수 없습니다.`);
+          return;
+        }
+
+        const bot = currentRoom.players[botIndex];
+        currentRoom.playerIds = currentRoom.playerIds.filter((id) => id !== bot.id);
+        currentRoom.players.splice(botIndex, 1);
+
+        saveToStorage();
+        addSystemMessage(`봇 "${botName}"이 제거되었습니다.`);
+        showGameRoom();
+      }
+
+      // Game Room
+      async function showGameRoom() {
+        if (!currentRoom) {
+          showLobby();
+          return;
+        }
+
+        // rooms 배열 업데이트 (currentRoom의 gameState를 유지하면서)
+        const roomIndex = rooms.findIndex((r) => r.id === currentRoom.id);
+        if (roomIndex >= 0) {
+          // currentRoom의 gameState가 있으면 유지
+          if (currentRoom.gameState) {
+            rooms[roomIndex] = { ...rooms[roomIndex], gameState: currentRoom.gameState };
+          }
+        }
+
+        // 동기화 시작
+        startSync();
+
+        const app = document.getElementById('app');
+        const gameState = currentRoom.gameState;
+        const isHost = currentRoom.hostId === currentPlayerId;
+        const canStart = currentRoom.playerIds.length >= 3 && currentRoom.playerIds.length <= 6;
+
+        // 채팅 영역 렌더링
+        const chatArea = renderChatArea();
+
+        app.innerHTML = `
+        <div class="game-room">
+          <div class="game-main phase-${gameState ? gameState.phase : ''}">
+            <div class="game-header">
+              <div>
+                <h2>${currentRoom.name} ${getModesBadges(currentRoom)}</h2>
+                <p style="color: #94a3b8;">방장: ${
+                  currentRoom.players.find((p) => p.id === currentRoom.hostId)?.name
+                }</p>
+              </div>
+              <div class="game-stats">
+                <div class="stat">
+                  <div class="stat-label">금고 성공</div>
+                  <div class="stat-value success">${gameState ? gameState.safesOpened : 0}/3</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">경보 발동</div>
+                  <div class="stat-value danger">${
+                    gameState ? gameState.alarmsTriggered : 0
+                  }/3</div>
+                </div>
+              </div>
+              <button class="danger" onclick="leaveRoom()">방 나가기</button>
+            </div>
+
+            ${gameState ? renderGameState() : renderWaitingRoom()}
+          </div>
+
+          ${chatArea}
+        </div>
+      `;
+
+        // 채팅 입력 이벤트 설정
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+          chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+              if (isGameInProgress()) {
+                e.preventDefault();
+                return;
+              }
+              sendMessage();
+            }
+          });
+        }
+
+        renderChat();
+      }
+
+      // 채팅 영역 렌더링
+      function renderChatArea() {
+        const inProgress = isGameInProgress();
+        const waiting = isWaitingMode();
+
+        return `
+          <div class="chat-sidebar ${isChatExpanded ? 'expanded' : ''}" id="chatSidebar">
+            <button class="chat-toggle" onclick="toggleChat()">
+              💬 채팅 ${isChatExpanded ? '▼ 접기' : '▲ 펼치기'}
+            </button>
+            <h3 class="chat-title">💬 채팅</h3>
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <!-- 이모지 버튼 (항상 표시) -->
+            <div class="emoji-buttons">
+              ${EMOJIS.map(
+                (e) => `
+                <button class="emoji-btn" onclick="sendEmoji('${e.emoji}')" title="${e.name}">
+                  ${e.emoji}
+                </button>
+              `,
+              ).join('')}
+            </div>
+
+            <!-- 일반 채팅 입력 (대기 모드에서만 활성화) -->
+            <div class="chat-input-group">
+              <input type="text" id="chatInput"
+                placeholder="${inProgress ? '게임 중에는 이모지만 사용 가능' : '메시지 입력'}"
+                ${inProgress ? 'disabled' : ''} />
+              <button onclick="sendMessage()" ${inProgress ? 'disabled' : ''}>전송</button>
+            </div>
+          </div>
+        `;
+      }
+
+      // 채팅 토글 (모바일용)
+      function toggleChat() {
+        isChatExpanded = !isChatExpanded;
+        const sidebar = document.getElementById('chatSidebar');
+        if (sidebar) {
+          sidebar.classList.toggle('expanded', isChatExpanded);
+          const toggleBtn = sidebar.querySelector('.chat-toggle');
+          if (toggleBtn) {
+            toggleBtn.textContent = `💬 채팅 ${isChatExpanded ? '▼ 접기' : '▲ 펼치기'}`;
+          }
+        }
+      }
+
+      function renderWaitingRoom() {
+        const isHost = currentRoom.hostId === currentPlayerId;
+        const canStart = currentRoom.playerIds.length >= 3;
+
+        return `
+        <div class="phase-indicator">
+          <div class="phase-name">대기 중</div>
+          <div class="phase-desc">
+            ${
+              canStart
+                ? '게임을 시작할 수 있습니다'
+                : `최소 3명이 필요합니다 (현재: ${currentRoom.playerIds.length}명)`
+            }
+          </div>
+        </div>
+
+        <div class="players-grid">
+          ${currentRoom.players
+            .map(
+              (player) => `
+            <div class="player-card">
+              <div class="player-header">
+                <div class="player-name ${player.isBot ? 'bot' : ''}">
+                  ${player.name}
+                  ${player.id === currentRoom.hostId ? ' 👑' : ''}
+                </div>
+              </div>
+              <p style="color: #94a3b8; font-size: 0.875rem;">준비 완료</p>
+            </div>
+          `,
+            )
+            .join('')}
+        </div>
+
+        <div class="game-actions">
+          ${
+            isHost
+              ? `
+            <button onclick="startGame()" ${!canStart ? 'disabled' : ''}>
+              게임 시작
+            </button>
+          `
+              : '<p style="color: #94a3b8;">방장이 게임을 시작하기를 기다리는 중...</p>'
+          }
+        </div>
+      `;
+      }
+
+      function renderGameState() {
+        const gs = currentRoom.gameState;
+
+        // ★ 상태 변화 감지하여 소리 재생
+        detectAndPlaySounds(gs);
+
+        const currentPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        const isHost = currentRoom.hostId === currentPlayerId;
+        const isInGame = isGameInProgress();
+        const isShowdown = gs.phase === 'SHOWDOWN';
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+        const showdownCalculated = gs.showdownCalculated;
+
+        // 내가 칩을 선택했는지, 결정했는지 확인
+        const myChipSelected = currentPlayer && currentPlayer.selectedChip !== null;
+        const myConfirmed = currentPlayer && currentPlayer.confirmed;
+
+        // 쇼다운에서 얼굴/홍체/지문 모드일 때 선택 완료 확인
+        let myShowdownReady = false;
+        if (isShowdown && !showdownCalculated && currentPlayer) {
+          if (extraMode === 'faceRecognition') {
+            // 얼굴인식: cardCount개 전부 선택해야 함
+            myShowdownReady =
+              currentPlayer.guessedNumbers && currentPlayer.guessedNumbers.length === cardCount;
+          } else if (extraMode === 'irisScanner') {
+            // 홍체인식: 1개만 선택하면 됨
+            myShowdownReady =
+              currentPlayer.guessedNumbers && currentPlayer.guessedNumbers.length === 1;
+          } else if (extraMode === 'fingerprint') {
+            myShowdownReady = !!currentPlayer.guessedRank;
+          }
+        }
+
+        // 모든 플레이어가 결정했는지 확인
+        const allConfirmed = gs.players.every((p) => p.confirmed);
+        const confirmedCount = gs.players.filter((p) => p.confirmed).length;
+
+        // 쇼다운에서 선택 대기 중인지 확인
+        const showdownWaiting =
+          isShowdown &&
+          !showdownCalculated &&
+          (extraMode === 'faceRecognition' ||
+            extraMode === 'irisScanner' ||
+            extraMode === 'fingerprint');
+
+        return `
+        <div class="phase-indicator">
+          <div class="phase-name">${getPhaseDisplay(gs.phase)}</div>
+          <div class="phase-desc">${
+            showdownWaiting
+              ? extraMode === 'faceRecognition'
+                ? `😀 1등의 카드 숫자 ${cardCount}개를 전부 맞추세요!`
+                : extraMode === 'irisScanner'
+                ? '👁️ 1등의 카드 숫자 중 1개를 맞추세요!'
+                : '👆 1등의 족보를 예측하세요!'
+              : getPhaseDescription(gs.phase)
+          }</div>
+          ${
+            isInGame || showdownWaiting
+              ? `<div style="color: #94a3b8; font-size: 0.875rem; margin-top: 8px;">결정완료: ${confirmedCount}/${gs.players.length}</div>`
+              : ''
+          }
+        </div>
+
+        <div class="community-cards">
+          ${renderCommunityCards()}
+        </div>
+
+        ${renderChipSelection()}
+
+        <div class="players-grid">
+          ${gs.players.map((player) => renderPlayerCard(player)).join('')}
+        </div>
+
+        <div class="game-actions">
+          ${
+            isInGame && currentPlayer && !currentPlayer.isBot
+              ? `
+            <button class="confirm-btn" onclick="confirmSelection()" ${
+              !myChipSelected || myConfirmed ? 'disabled' : ''
+            }>
+              ${myConfirmed ? '✅ 결정완료' : myChipSelected ? '✓ 결정' : '칩을 먼저 선택하세요'}
+            </button>
+          `
+              : ''
+          }
+          ${
+            showdownWaiting && currentPlayer && !currentPlayer.isBot
+              ? `
+            <button class="confirm-btn" onclick="confirmShowdownSelection()" ${
+              !myShowdownReady || myConfirmed ? 'disabled' : ''
+            }>
+              ${
+                myConfirmed
+                  ? '✅ 결정완료'
+                  : myShowdownReady
+                  ? '✓ 결정'
+                  : extraMode === 'faceRecognition'
+                  ? `숫자 ${cardCount}개를 선택하세요`
+                  : extraMode === 'irisScanner'
+                  ? '숫자 1개를 선택하세요'
+                  : '족보를 선택하세요'
+              }
+            </button>
+          `
+              : ''
+          }
+          ${
+            // 금고/경보가 3개 미만일 때만 다음 라운드 버튼 노출
+            isShowdown && showdownCalculated && gs.safesOpened < 3 && gs.alarmsTriggered < 3
+              ? `
+            <button onclick="nextRound()">다음 라운드</button>
+          `
+              : ''
+          }
+          ${
+            gs.safesOpened >= 3 || gs.alarmsTriggered >= 3
+              ? `
+            <button onclick="endGame()">게임 종료</button>
+          `
+              : ''
+          }
+        </div>
+      `;
+      }
+
+      function renderCommunityCards() {
+        const gs = currentRoom.gameState;
+        let cardsToShow = 0;
+
+        switch (gs.phase) {
+          case 'PRE_FLOP':
+            cardsToShow = 0;
+            break;
+          case 'FLOP':
+            cardsToShow = 3;
+            break;
+          case 'TURN':
+            cardsToShow = 4;
+            break;
+          case 'RIVER':
+          case 'SHOWDOWN':
+            cardsToShow = 5;
+            break;
+        }
+
+        if (cardsToShow === 0) {
+          return '<p style="color: #94a3b8;">커뮤니티 카드가 아직 공개되지 않았습니다</p>';
+        }
+
+        return gs.communityCards
+          .slice(0, cardsToShow)
+          .map(
+            (card) =>
+              `<div class="card ${card.suit === '♥' || card.suit === '♦' ? 'red' : 'black'}">
+          <div>${card.rank}</div>
+          <div>${card.suit}</div>
+        </div>`,
+          )
+          .join('');
+      }
+
+      function renderPlayerCard(player) {
+        const gs = currentRoom.gameState;
+        const isCurrentPlayer = player.id === currentPlayerId;
+        const isShowdown = gs.phase === 'SHOWDOWN';
+        const hasSelectedChip = player.selectedChip !== null;
+
+        // 홍체/지문 모드에서는 결과 계산 전까지 다른 플레이어 카드 숨김
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const showdownCalculated = gs.showdownCalculated;
+        const isExtraMode = extraMode === 'irisScanner' || extraMode === 'fingerprint';
+
+        // 카드 공개 조건:
+        // 1. 자기 자신이면 항상 보임
+        // 2. 쇼다운이고 (스탠다드/보안카메라 모드이거나, 홍체/지문 모드지만 결과 계산 완료)
+        const showCards = isCurrentPlayer || (isShowdown && (!isExtraMode || showdownCalculated));
+
+        // 다른 플레이어가 칩을 선택했으면 클릭 가능 (교환 또는 가져오기)
+        const myPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        const canInteractChip = !isCurrentPlayer && hasSelectedChip && myPlayer && !isShowdown;
+
+        // 힌트 텍스트 결정
+        let hintText = '';
+        if (canInteractChip) {
+          if (myPlayer.selectedChip === null) {
+            hintText = '💡 클릭하여 칩 가져오기';
+          } else {
+            hintText = '🔄 클릭하여 칩 교환하기';
+          }
+        }
+
+        // 칩 히스토리 렌더링 (이전 페이즈들)
+        const phaseLabels = { PRE_FLOP: 'P', FLOP: 'F', TURN: 'T', RIVER: 'R' };
+        const chipHistory = player.chipHistory || [];
+        const chipHistoryHtml =
+          chipHistory.length > 0
+            ? `<div class="chip-history">
+              ${chipHistory
+                .map(
+                  (h) => `
+                <div class="chip-history-item phase-${h.phase}">
+                  <span class="chip-history-label">${phaseLabels[h.phase]}</span>
+                  <span class="chip-history-value">${h.chip}</span>
+                </div>
+              `,
+                )
+                .join('')}
+            </div>`
+            : '';
+
+        return `
+        <div class="player-card ${isCurrentPlayer ? 'current' : ''} phase-${gs.phase}">
+          <div class="player-header">
+            <div class="player-name ${player.isBot ? 'bot' : ''}">
+              ${player.name}
+              ${player.id === currentRoom.hostId ? ' 👑' : ''}
+            </div>
+            <div class="chip-area">
+              ${chipHistoryHtml}
+              ${
+                hasSelectedChip
+                  ? `
+                <div class="chip current-chip ${canInteractChip ? 'clickable' : ''}"
+                     data-value="${player.selectedChip}"
+                     ${
+                       canInteractChip
+                         ? `onclick="stealChip('${player.id}', ${player.selectedChip})"`
+                         : ''
+                     }>
+                  ${player.selectedChip}
+                </div>
+              `
+                  : '<div style="color: #64748b; font-size: 0.75rem;">선택 중...</div>'
+              }
+            </div>
+          </div>
+          <div class="steal-hint">　${hintText ? hintText : ''}</div>
+
+          <div class="player-cards">
+            ${
+              showCards
+                ? player.hand
+                    .map((card) => {
+                      const suitMap = { '♠': 'S', '♥': 'H', '♦': 'D', '♣': 'C' };
+                      const rankMap = {
+                        A: 'A',
+                        2: '2',
+                        3: '3',
+                        4: '4',
+                        5: '5',
+                        6: '6',
+                        7: '7',
+                        8: '8',
+                        9: '9',
+                        10: '10',
+                        J: 'J',
+                        Q: 'Q',
+                        K: 'K',
+                      };
+                      const suitCode = suitMap[card.suit] || 'S';
+                      const rankCode = rankMap[card.rank] || card.rank;
+                      return `<div class="small-card-img">
+                          <img src="ui/card/${rankCode}${suitCode}.png" alt="${card.rank}${
+                        card.suit
+                      }"
+                               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                          <div class="small-card ${
+                            card.suit === '♥' || card.suit === '♦' ? 'red' : 'black'
+                          }" style="display: none;">
+                            <div>${card.rank}</div>
+                            <div>${card.suit}</div>
+                          </div>
+                        </div>`;
+                    })
+                    .join('')
+                : Array.from(
+                    { length: player.hand?.length || 2 },
+                    () =>
+                      `<div class="small-card-img"><img src="ui/card.png" alt="카드 뒷면" /></div>`,
+                  ).join('')
+            }
+          </div>
+
+          <div class="player-status ${
+            isShowdown ? '' : player.confirmed ? 'confirmed' : 'waiting'
+          }">
+            ${renderPlayerStatus(player, gs, isShowdown, hasSelectedChip)}
+          </div>
+        </div>
+      `;
+      }
+
+      // 플레이어 상태 렌더링 (쇼다운 시 홍체/지문 선택 결과 포함)
+      // 플레이어 순위 계산 (동점자 처리)
+      function calculatePlayerRanks(players) {
+        if (!players || players.length === 0) return {};
+
+        // handValue로 내림차순 정렬
+        const sortedPlayers = [...players]
+          .filter((p) => p.handValue !== undefined)
+          .sort((a, b) => b.handValue - a.handValue);
+
+        if (sortedPlayers.length === 0) return {};
+
+        const ranks = {};
+        let currentRank = 1;
+        let sameRankStart = 1;
+        let prevValue = sortedPlayers[0].handValue;
+
+        sortedPlayers.forEach((player, index) => {
+          if (player.handValue === prevValue) {
+            // 동점
+          } else {
+            // 새로운 순위
+            currentRank = index + 1;
+            sameRankStart = currentRank;
+            prevValue = player.handValue;
+          }
+          ranks[player.id] = { start: sameRankStart, end: index + 1 };
+        });
+
+        // 마지막 그룹의 end 값 업데이트
+        let lastValue = sortedPlayers[sortedPlayers.length - 1].handValue;
+        sortedPlayers.forEach((player) => {
+          if (player.handValue === lastValue) {
+            const sameValuePlayers = sortedPlayers.filter((p) => p.handValue === lastValue);
+            const maxEnd = Math.max(...sameValuePlayers.map((p) => sortedPlayers.indexOf(p) + 1));
+            ranks[player.id].end = maxEnd;
+          }
+        });
+
+        // 동점 그룹 처리
+        const valueGroups = {};
+        sortedPlayers.forEach((player, index) => {
+          if (!valueGroups[player.handValue]) {
+            valueGroups[player.handValue] = [];
+          }
+          valueGroups[player.handValue].push({ player, index: index + 1 });
+        });
+
+        Object.values(valueGroups).forEach((group) => {
+          const start = Math.min(...group.map((g) => g.index));
+          const end = Math.max(...group.map((g) => g.index));
+          group.forEach((g) => {
+            ranks[g.player.id] = { start, end };
+          });
+        });
+
+        return ranks;
+      }
+
+      // 순위 문자열 생성 (동점 시 "1~2", 단독 시 "1")
+      function getRankString(ranks, playerId) {
+        const rank = ranks[playerId];
+        if (!rank) return '';
+        if (rank.start === rank.end) {
+          return `${rank.start}`;
+        }
+        return `${rank.start}~${rank.end}`;
+      }
+
+      function renderPlayerStatus(player, gs, isShowdown, hasSelectedChip) {
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const showdownCalculated = gs.showdownCalculated;
+
+        if (isShowdown) {
+          let statusHtml = '';
+          const isExtraMode =
+            extraMode === 'faceRecognition' ||
+            extraMode === 'irisScanner' ||
+            extraMode === 'fingerprint';
+          const isCurrentPlayer = player.id === currentPlayerId;
+
+          // 얼굴/홍체/지문 모드에서 결과 계산 전에는 순위/핸드랭크 숨김 (본인 제외)
+          if (isExtraMode && !showdownCalculated) {
+            // 본인은 자기 핸드만 표시 (순위 없이)
+            if (isCurrentPlayer && player.handRank) {
+              statusHtml += `<span class="hand-rank">${player.handRank}</span>`;
+              statusHtml += `<div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">🔒 결과 대기 중...</div>`;
+            } else {
+              // 다른 플레이어는 완전히 숨김
+              statusHtml += `<div style="color: #94a3b8;">🔒 ???</div>`;
+            }
+          } else {
+            // 결과 계산 완료 또는 스탠다드/보안카메라 모드
+            // 순위 계산
+            const ranks = calculatePlayerRanks(gs.players);
+            const rankStr = getRankString(ranks, player.id);
+
+            // 핸드 랭크 + 순위 표시
+            if (player.handRank) {
+              const rankColor = rankStr.startsWith('1') ? '#fbbf24' : '#94a3b8';
+              statusHtml += `<span class="hand-rank">${player.handRank}</span>`;
+              if (rankStr) {
+                statusHtml += `<span style="color: ${rankColor}; font-weight: bold; margin-left: 4px;">(${rankStr}위)</span>`;
+              }
+            }
+          }
+
+          // 얼굴/홍체/지문 모드에서 선택 결과 표시 (결과 계산 후에만)
+          if (showdownCalculated) {
+            if (
+              extraMode === 'faceRecognition' &&
+              player.guessedNumbers &&
+              player.guessedNumbers.length > 0
+            ) {
+              statusHtml += `<div style="font-size: 0.7rem; color: #22c55e; margin-top: 4px;">😀 ${player.guessedNumbers.join(
+                ', ',
+              )}</div>`;
+            } else if (
+              extraMode === 'irisScanner' &&
+              player.guessedNumbers &&
+              player.guessedNumbers.length > 0
+            ) {
+              statusHtml += `<div style="font-size: 0.7rem; color: #8b5cf6; margin-top: 4px;">👁️ ${player.guessedNumbers.join(
+                ', ',
+              )}</div>`;
+            } else if (extraMode === 'fingerprint' && player.guessedRank) {
+              statusHtml += `<div style="font-size: 0.7rem; color: #ef4444; margin-top: 4px;">👆 ${player.guessedRank}</div>`;
+            }
+          }
+
+          // 쇼다운 대기 중 (아직 결과 계산 안됨) - 얼굴/홍체/지문 모드에서 선택 상태 표시
+          if (!showdownCalculated && isExtraMode) {
+            if (player.confirmed) {
+              statusHtml += `<div style="font-size: 0.75rem; color: #10b981; margin-top: 2px;">✅ 결정완료</div>`;
+            } else if (isCurrentPlayer) {
+              statusHtml += `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">⏳ 선택 중...</div>`;
+            }
+          }
+
+          return statusHtml || '대기 중';
+        }
+
+        // 게임 진행 중
+        if (hasSelectedChip) {
+          return player.confirmed ? '✅ 결정완료' : '⏳ 결정 대기';
+        }
+        return '🎯 칩 선택 중...';
+      }
+
+      function getPhaseDisplay(phase) {
+        const phases = {
+          PRE_FLOP: '프리플랍',
+          FLOP: '플랍',
+          TURN: '턴',
+          RIVER: '리버',
+          SHOWDOWN: '쇼다운',
+        };
+        return phases[phase] || phase;
+      }
+
+      function getPhaseDescription(phase) {
+        const playerCount = currentRoom?.gameState?.players?.length || 6;
+        const gs = currentRoom?.gameState;
+
+        // 쇼다운에서 결과 메시지 표시
+        if (phase === 'SHOWDOWN' && gs) {
+          const extraMode =
+            currentRoom.extraMode ||
+            (currentRoom.gameMode === 'faceRecognition' ||
+            currentRoom.gameMode === 'irisScanner' ||
+            currentRoom.gameMode === 'fingerprint'
+              ? currentRoom.gameMode
+              : null);
+
+          // 결과가 계산되었을 때만 메시지 표시
+          if (gs.showdownCalculated) {
+            // 스탠다드/보안카메라 모드
+            if (!extraMode) {
+              // 칩 서열 체크 결과에 따라 메시지 표시
+              const getPlayerRiverChip = (player) => {
+                const riverHistory = player.chipHistory?.find((h) => h.phase === 'RIVER');
+                return riverHistory ? riverHistory.chip : player.selectedChip;
+              };
+              const chipOrderResult = checkFullChipOrder(gs.players, getPlayerRiverChip);
+              if (chipOrderResult.correct) {
+                return '칩 순위 예측 성공 금고획득!';
+              } else {
+                return '칩 순위 예측 실패 경보발동!';
+              }
+            } else {
+              // 얼굴/홍체/지문 모드: 최종 결과 메시지
+              // 칩 서열 실패로 바로 경보가 발동된 경우도 체크
+              const getPlayerRiverChip = (player) => {
+                const riverHistory = player.chipHistory?.find((h) => h.phase === 'RIVER');
+                return riverHistory ? riverHistory.chip : player.selectedChip;
+              };
+              const chipOrderResult = checkFullChipOrder(gs.players, getPlayerRiverChip);
+              if (!chipOrderResult.correct) {
+                return '칩 순위 예측 실패 경보발동!';
+              } else if (gs.safesOpened > (gs.alarmsTriggered || 0)) {
+                return '칩 순위 예측 성공 금고획득!';
+              } else {
+                return '칩 순위 예측 실패 경보발동!';
+              }
+            }
+          }
+        }
+
+        const descriptions = {
+          PRE_FLOP: `각자의 카드를 보고 손의 강도를 예측하세요 (1~${playerCount})`,
+          FLOP: '3장의 커뮤니티 카드가 공개되었습니다',
+          TURN: '4번째 커뮤니티 카드가 공개되었습니다',
+          RIVER: '5번째 커뮤니티 카드가 공개되었습니다',
+          SHOWDOWN: '모든 카드가 공개되었습니다!',
+        };
+        return descriptions[phase] || '';
+      }
+
+      async function leaveRoom() {
+        if (!currentRoom) return;
+
+        const isHost = currentRoom.hostId === currentPlayerId;
+
+        // Remove player
+        currentRoom.playerIds = currentRoom.playerIds.filter((id) => id !== currentPlayerId);
+        currentRoom.players = currentRoom.players.filter((p) => p.id !== currentPlayerId);
+
+        // If host leaves or room empty, delete room
+        if (isHost || currentRoom.playerIds.length === 0) {
+          await deleteRoomFromServer(currentRoom.id);
+          rooms = rooms.filter((r) => r.id !== currentRoom.id);
+          addSystemMessage(`방 "${currentRoom.name}"이 삭제되었습니다.`);
+        } else {
+          // Transfer host
+          currentRoom.hostId = currentRoom.playerIds[0];
+          await saveRoomToServer(currentRoom);
+        }
+
+        // 마지막 방 ID 삭제
+        localStorage.removeItem('lastRoomId');
+
+        showLobby();
+      }
+
+      // Game Logic
+      function startGame() {
+        if (!currentRoom || currentRoom.hostId !== currentPlayerId) return;
+        if (currentRoom.playerIds.length < 3 || currentRoom.playerIds.length > 6) return;
+
+        const deck = createDeck();
+        shuffle(deck);
+
+        // 모드에 따른 카드 수 결정
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+
+        const players = currentRoom.players.map((player) => ({
+          id: player.id,
+          name: player.name,
+          isBot: player.isBot,
+          hand: Array.from({ length: cardCount }, () => deck.pop()),
+          selectedChip: null,
+          confirmed: false,
+          handRank: null,
+          chipHistory: [], // 이전 페이즈 칩 기록
+          guessedNumbers: [], // 홍체인식기 모드용
+          guessedRank: null, // 지문인식기 모드용
+        }));
+
+        currentRoom.gameState = {
+          phase: 'PRE_FLOP',
+          round: 1,
+          deck: deck,
+          communityCards: [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()],
+          players: players,
+          safesOpened: 0,
+          alarmsTriggered: 0,
+        };
+
+        saveToStorage();
+        addSystemMessage('게임이 시작되었습니다!', true);
+
+        // 게임 시작 사운드 재생 (모든 플레이어)
+        playSound('start');
+
+        // Auto-select chips for bots
+        setTimeout(() => {
+          autoSelectBotsChips();
+        }, 500);
+
+        showGameRoom();
+
+        // 프리플랍 팁 팝업 표시
+        setTimeout(() => {
+          showPreFlopTip();
+        }, 300);
+      }
+
+      function createDeck() {
+        const suits = ['♠', '♥', '♦', '♣'];
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const deck = [];
+        for (const suit of suits) {
+          for (const rank of ranks) {
+            deck.push({ suit, rank });
+          }
+        }
+        return deck;
+      }
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      async function selectChip(value) {
+        if (!currentRoom || !currentRoom.gameState) return;
+        if (currentRoom.gameState.phase === 'SHOWDOWN') return;
+
+        try {
+          // 서버에서 최신 데이터 가져오기
+          const serverRoom = await getRoomFromServer(currentRoom.id);
+          if (serverRoom && serverRoom.gameState) {
+            currentRoom = serverRoom;
+          } else {
+            console.error('selectChip: 방을 찾을 수 없음');
+            return;
+          }
+
+          // 재확인
+          if (!currentRoom || !currentRoom.gameState) {
+            console.error('selectChip: currentRoom이 null');
+            return;
+          }
+
+          const player = currentRoom.gameState.players.find((p) => p.id === currentPlayerId);
+          if (!player || player.isBot) return;
+
+          // 칩을 변경하면 결정 취소
+          if (player.selectedChip !== value) {
+            player.confirmed = false;
+          }
+          player.selectedChip = value;
+
+          await saveToStorage();
+          showGameRoom();
+        } catch (e) {
+          console.error('selectChip 오류:', e);
+        }
+      }
+
+      // 다른 플레이어의 칩 가져오기/교환하기
+      function stealChip(fromPlayerId, chipValue) {
+        if (!currentRoom || !currentRoom.gameState) return;
+        if (currentRoom.gameState.phase === 'SHOWDOWN') return;
+
+        const gs = currentRoom.gameState;
+        const myPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        const fromPlayer = gs.players.find((p) => p.id === fromPlayerId);
+
+        if (!myPlayer || !fromPlayer) return;
+        if (fromPlayer.selectedChip === null) return; // 대상 플레이어가 선택 안함
+
+        const myOldChip = myPlayer.selectedChip;
+        const fromOldChip = fromPlayer.selectedChip;
+
+        if (myOldChip === null) {
+          // 내가 칩 미선택 → 상대 칩 가져오기
+          myPlayer.selectedChip = fromOldChip;
+          fromPlayer.selectedChip = null;
+          fromPlayer.confirmed = false;
+          myPlayer.confirmed = false;
+
+          addSystemMessage(
+            `${myPlayer.name}님이 ${fromPlayer.name}님의 ${fromOldChip}번 칩을 가져왔습니다!`,
+            true,
+          );
+
+          // 봇이면 즉시 새 칩 선택
+          if (fromPlayer.isBot) {
+            autoSelectSingleBotChip(fromPlayer);
+          }
+        } else {
+          // 내가 칩 선택함 → 서로 칩 교환
+          myPlayer.selectedChip = fromOldChip;
+          fromPlayer.selectedChip = myOldChip;
+          fromPlayer.confirmed = false;
+          myPlayer.confirmed = false;
+
+          addSystemMessage(
+            `${myPlayer.name}님과 ${fromPlayer.name}님이 칩을 교환했습니다! (${myOldChip}번 ↔ ${fromOldChip}번)`,
+            true,
+          );
+
+          // 봇은 교환 후 자동 결정
+          if (fromPlayer.isBot) {
+            fromPlayer.confirmed = true;
+          }
+        }
+
+        saveToStorage();
+        showGameRoom();
+
+        // 봇 결정 완료 체크 (약간의 딜레이 후)
+        setTimeout(() => checkAllConfirmed(), 300);
+      }
+
+      // 단일 봇 칩 선택
+      function autoSelectSingleBotChip(bot) {
+        if (!currentRoom || !currentRoom.gameState) return false;
+
+        const gs = currentRoom.gameState;
+        const playerCount = gs.players.length;
+
+        // 이미 선택된 칩들 (자신 제외)
+        const selectedChips = gs.players
+          .filter((p) => p.id !== bot.id && p.selectedChip !== null)
+          .map((p) => p.selectedChip);
+
+        // 사용 가능한 칩 (플레이어 수에 맞게)
+        const allChips = Array.from({ length: playerCount }, (_, i) => i + 1);
+        let availableChips = allChips.filter((c) => !selectedChips.includes(c));
+
+        if (availableChips.length === 0) {
+          // 사용 가능한 칩이 없으면 가장 큰 칩 선택 (중복 허용)
+          bot.selectedChip = playerCount;
+        } else {
+          const randomIndex = Math.floor(Math.random() * availableChips.length);
+          bot.selectedChip = availableChips[randomIndex];
+        }
+
+        // 봇은 자동으로 결정
+        bot.confirmed = true;
+
+        return true;
+      }
+
+      // 프리플랍~리버에서 봇 자동 칩 선택 (모든 모드 동일)
+      function autoSelectBotsChips() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        const gs = currentRoom.gameState;
+        const playerCount = gs.players.length;
+        const bots = gs.players.filter((p) => p.isBot && p.selectedChip === null);
+
+        // 모든 모드에서 동일하게 칩 선택
+        const selectedChips = gs.players
+          .filter((p) => p.selectedChip !== null)
+          .map((p) => p.selectedChip);
+
+        const allChips = Array.from({ length: playerCount }, (_, i) => i + 1);
+        let availableChips = allChips.filter((c) => !selectedChips.includes(c));
+
+        bots.forEach((bot) => {
+          if (availableChips.length === 0) {
+            bot.selectedChip = Math.floor(Math.random() * playerCount) + 1;
+          } else {
+            const randomIndex = Math.floor(Math.random() * availableChips.length);
+            bot.selectedChip = availableChips[randomIndex];
+            availableChips = availableChips.filter((_, idx) => idx !== randomIndex);
+          }
+          bot.confirmed = true;
+        });
+
+        saveToStorage();
+        showGameRoom();
+
+        // 모든 플레이어가 결정했는지 확인
+        setTimeout(() => checkAllConfirmed(), 100);
+      }
+
+      // 결정 버튼 클릭 시 해당 플레이어만 결정 완료
+      let isConfirming = false; // 중복 실행 방지
+
+      async function confirmSelection() {
+        if (!currentRoom || !currentRoom.gameState) return;
+        if (isConfirming) {
+          console.log('confirmSelection: 이미 실행 중');
+          return;
+        }
+
+        isConfirming = true;
+
+        try {
+          // 서버에서 최신 데이터 가져오기 (다른 플레이어 상태 동기화)
+          const serverRoom = await getRoomFromServer(currentRoom.id);
+          if (serverRoom && serverRoom.gameState) {
+            currentRoom = serverRoom;
+          }
+
+          const gs = currentRoom.gameState;
+          const myPlayer = gs.players.find((p) => p.id === currentPlayerId);
+
+          if (!myPlayer || myPlayer.selectedChip === null) return;
+          if (myPlayer.confirmed) return; // 이미 결정함
+
+          myPlayer.confirmed = true;
+          console.log(`confirmSelection: ${myPlayer.name}(${myPlayer.id}) 결정 완료`);
+
+          await saveToStorage();
+          console.log('confirmSelection: 서버 저장 완료');
+
+          showGameRoom();
+
+          // 모든 플레이어가 결정했는지 확인
+          checkAllConfirmed();
+        } finally {
+          isConfirming = false;
+        }
+      }
+
+      // 쇼다운에서 얼굴/홍체/지문 모드 결정
+      async function confirmShowdownSelection() {
+        if (!currentRoom || !currentRoom.gameState) return;
+        if (currentRoom.gameState.phase !== 'SHOWDOWN') return;
+        if (currentRoom.gameState.showdownCalculated) return;
+
+        // 서버에서 최신 데이터 가져오기
+        const serverRoom = await getRoomFromServer(currentRoom.id);
+        if (serverRoom && serverRoom.gameState) {
+          currentRoom = serverRoom;
+        }
+
+        const gs = currentRoom.gameState;
+        const myPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        if (!myPlayer || myPlayer.isBot) return;
+        if (myPlayer.confirmed) return;
+
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+
+        // 선택이 완료됐는지 확인
+        if (extraMode === 'faceRecognition') {
+          // 얼굴인식: cardCount개 전부 선택해야 함
+          if (!myPlayer.guessedNumbers || myPlayer.guessedNumbers.length !== cardCount) return;
+        } else if (extraMode === 'irisScanner') {
+          // 홍체인식: 1개만 선택하면 됨
+          if (!myPlayer.guessedNumbers || myPlayer.guessedNumbers.length !== 1) return;
+        } else if (extraMode === 'fingerprint') {
+          if (!myPlayer.guessedRank) return;
+        }
+
+        myPlayer.confirmed = true;
+        console.log(`confirmShowdownSelection: ${myPlayer.name}(${myPlayer.id}) 결정 완료`);
+
+        await saveToStorage();
+        console.log('confirmShowdownSelection: 서버 저장 완료');
+
+        showGameRoom();
+
+        // 모든 플레이어가 결정했는지 확인
+        checkShowdownConfirmed();
+      }
+
+      // 모든 플레이어가 결정했는지 확인하고 다음 페이즈로 이동
+      function checkAllConfirmed() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        const allConfirmed = currentRoom.gameState.players.every((p) => p.confirmed);
+        if (allConfirmed) {
+          setTimeout(() => {
+            advancePhase();
+          }, 500);
+        }
+      }
+
+      async function advancePhase() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        const phases = ['PRE_FLOP', 'FLOP', 'TURN', 'RIVER', 'SHOWDOWN'];
+        const currentIndex = phases.indexOf(currentRoom.gameState.phase);
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+
+        if (currentIndex < phases.length - 1) {
+          // 현재 칩을 히스토리에 저장 (다음 페이즈로 넘어가기 전)
+          const currentPhase = currentRoom.gameState.phase;
+          currentRoom.gameState.players.forEach((p) => {
+            if (p.selectedChip !== null) {
+              p.chipHistory.push({
+                phase: currentPhase,
+                chip: p.selectedChip,
+              });
+            }
+          });
+
+          currentRoom.gameState.phase = phases[currentIndex + 1];
+
+          // Reset chips and confirmed for next phase
+          if (currentRoom.gameState.phase !== 'SHOWDOWN') {
+            currentRoom.gameState.players.forEach((p) => {
+              p.selectedChip = null;
+              p.confirmed = false;
+            });
+          }
+
+          // 쇼다운 진입 시
+          if (currentRoom.gameState.phase === 'SHOWDOWN') {
+            const gs = currentRoom.gameState;
+
+            // 먼저 핸드 평가
+            gs.players.forEach((player) => {
+              const handValue = evaluateHand(player.hand, gs.communityCards);
+              player.handRank = handValue.name;
+              player.handValue = handValue.value;
+              player.highCard = getHighCard(player.hand);
+            });
+
+            // 최고 핸드 플레이어 찾기
+            const bestHandValue = Math.max(...gs.players.map((p) => p.handValue));
+            const bestPlayer = gs.players.find((p) => p.handValue === bestHandValue);
+
+            // 리버에서 선택한 칩 가져오기
+            const getPlayerRiverChip = (player) => {
+              const riverHistory = player.chipHistory?.find((h) => h.phase === 'RIVER');
+              return riverHistory ? riverHistory.chip : player.selectedChip;
+            };
+
+            const playerChips = gs.players.map((p) => ({
+              player: p,
+              chip: getPlayerRiverChip(p),
+            }));
+
+            // 전체 칩 서열 체크 (모든 플레이어의 칩 = 실제 순위)
+            const chipOrderResult = checkFullChipOrder(gs.players, getPlayerRiverChip);
+            const chipOrderCorrect = chipOrderResult.correct;
+
+            // 얼굴인식/홍체인식/지문인식 모드
+            if (
+              extraMode === 'faceRecognition' ||
+              extraMode === 'irisScanner' ||
+              extraMode === 'fingerprint'
+            ) {
+              if (!chipOrderCorrect) {
+                // 칩 서열이 틀리면 바로 경보! (홍체/지문 기회 없음)
+                gs.alarmsTriggered++;
+                gs.showdownCalculated = true;
+                console.log('advancePhase: 칩 서열 실패! fail 사운드 재생');
+                playSound('fail'); // 경보 사운드
+                // 틀린 사람들 상세 표시
+                const mismatchDetails = chipOrderResult.mismatches
+                  .map(
+                    (m) =>
+                      `${m.player.name}(${m.chip}번칩=${m.predictedRank}등예측→실제${m.actualRank}등)`,
+                  )
+                  .join(', ');
+                addSystemMessage(`❌ 경보 발동! 칩 서열 실패! [${mismatchDetails}]`, true);
+                await saveToStorage();
+                showGameRoom();
+                return;
+              }
+
+              // 칩 서열이 맞으면 홍체/지문 선택 대기
+              gs.players.forEach((p) => {
+                p.confirmed = false;
+                p.guessedNumbers = [];
+                p.guessedRank = null;
+              });
+              gs.showdownCalculated = false;
+
+              await saveToStorage();
+              showGameRoom();
+
+              // 봇 자동 선택
+              setTimeout(() => autoSelectBotsShowdown(), 500);
+              return;
+            } else {
+              // 스탠다드/보안카메라: 바로 결과 계산
+              console.log(
+                'advancePhase: calculateShowdown 호출 전, showdownCalculated:',
+                gs.showdownCalculated,
+              );
+              gs.showdownCalculated = false; // 확실히 false로 설정
+              await calculateShowdown();
+              console.log(
+                'advancePhase: calculateShowdown 완료, safesOpened:',
+                gs.safesOpened,
+                'alarmsTriggered:',
+                gs.alarmsTriggered,
+              );
+            }
+          }
+
+          await saveToStorage();
+          showGameRoom();
+
+          // Auto-select for bots in new phase
+          if (currentRoom.gameState.phase !== 'SHOWDOWN') {
+            setTimeout(() => autoSelectBotsChips(), 500);
+          }
+        }
+      }
+
+      // 쇼다운에서 봇 자동 선택 (얼굴인식/홍체인식/지문인식)
+      function autoSelectBotsShowdown() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        const gs = currentRoom.gameState;
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+        const bots = gs.players.filter((p) => p.isBot);
+
+        if (extraMode === 'faceRecognition') {
+          // 얼굴인식: cardCount개 전부 선택
+          const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+          bots.forEach((bot) => {
+            bot.guessedNumbers = [];
+            for (let i = 0; i < cardCount; i++) {
+              const availableRanks = ranks.filter((r) => !bot.guessedNumbers.includes(r));
+              const randomIdx = Math.floor(Math.random() * availableRanks.length);
+              bot.guessedNumbers.push(availableRanks[randomIdx]);
+            }
+            bot.confirmed = true;
+          });
+        } else if (extraMode === 'irisScanner') {
+          // 홍체인식: 1개만 선택
+          const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+          bots.forEach((bot) => {
+            bot.guessedNumbers = [];
+            const randomIdx = Math.floor(Math.random() * ranks.length);
+            bot.guessedNumbers.push(ranks[randomIdx]);
+            bot.confirmed = true;
+          });
+        } else if (extraMode === 'fingerprint') {
+          const handRanks = [
+            '로열 스트레이트 플러시',
+            '스트레이트 플러시',
+            '포카드',
+            '풀하우스',
+            '플러시',
+            '스트레이트',
+            '트리플',
+            '투페어',
+            '원페어',
+            '하이카드',
+          ];
+          const weights = [1, 2, 3, 5, 8, 10, 15, 20, 25, 30];
+          const totalWeight = weights.reduce((a, b) => a + b, 0);
+
+          bots.forEach((bot) => {
+            let random = Math.random() * totalWeight;
+            let selectedIdx = 0;
+            for (let i = 0; i < weights.length; i++) {
+              random -= weights[i];
+              if (random <= 0) {
+                selectedIdx = i;
+                break;
+              }
+            }
+            bot.guessedRank = handRanks[selectedIdx];
+            bot.confirmed = true;
+          });
+        }
+
+        saveToStorage();
+        showGameRoom();
+
+        // 모든 플레이어가 결정했는지 확인
+        setTimeout(() => checkShowdownConfirmed(), 100);
+      }
+
+      // 전체 칩 서열 체크 함수 (모든 플레이어의 칩이 실제 순위와 일치하는지)
+      // 규칙: 높은 칩 = 높은 순위 (3명일 때 3번칩=1등, 2번칩=2등, 1번칩=3등)
+      function checkFullChipOrder(players, getChipFn) {
+        const playerCount = players.length;
+
+        // 핸드 밸류로 정렬하여 실제 순위 계산
+        const sortedByHand = [...players].sort((a, b) => b.handValue - a.handValue);
+
+        // 실제 순위 계산 (동점자 처리)
+        const actualRanks = {};
+        let currentRank = 1;
+        let prevValue = null;
+
+        sortedByHand.forEach((player, index) => {
+          if (prevValue !== null && player.handValue < prevValue) {
+            currentRank = index + 1;
+          }
+          actualRanks[player.id] = currentRank;
+          prevValue = player.handValue;
+        });
+
+        // 각 플레이어의 칩과 실제 순위 비교
+        const mismatches = [];
+        let allCorrect = true;
+
+        players.forEach((player) => {
+          const chipNum = getChipFn(player);
+          const actualRank = actualRanks[player.id];
+
+          // 칩 번호를 예측 순위로 변환: 높은 칩 = 1등
+          // 예: 3명일 때 3번칩=1등예측, 2번칩=2등예측, 1번칩=3등예측
+          const predictedRank = playerCount + 1 - chipNum;
+
+          // 동점자 범위 계산
+          const sameRankPlayers = Object.entries(actualRanks).filter(
+            ([id, rank]) => rank === actualRank,
+          );
+          const rankRange = {
+            min: actualRank,
+            max: actualRank + sameRankPlayers.length - 1,
+          };
+
+          // 예측 순위가 실제 순위 범위 내에 있는지 확인
+          const isCorrect = predictedRank >= rankRange.min && predictedRank <= rankRange.max;
+
+          if (!isCorrect) {
+            allCorrect = false;
+            mismatches.push({
+              player: player,
+              chip: chipNum,
+              predictedRank: predictedRank,
+              actualRank: actualRank,
+              rankRange: rankRange,
+            });
+          }
+        });
+
+        return {
+          correct: allCorrect,
+          mismatches: mismatches,
+          actualRanks: actualRanks,
+          playerCount: playerCount,
+        };
+      }
+
+      // 쇼다운에서 모든 플레이어 결정 확인
+      function checkShowdownConfirmed() {
+        if (!currentRoom || !currentRoom.gameState) return;
+        if (currentRoom.gameState.phase !== 'SHOWDOWN') return;
+        if (currentRoom.gameState.showdownCalculated) return;
+
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+
+        const allConfirmed = currentRoom.gameState.players.every((p) => p.confirmed);
+
+        // 모든 플레이어가 결정 완료하면 자동으로 결과 계산 (호스트만)
+        if (allConfirmed && currentRoom.hostId === currentPlayerId) {
+          setTimeout(async () => {
+            await calculateShowdown();
+            currentRoom.gameState.showdownCalculated = true;
+            await saveToStorage();
+            showGameRoom();
+          }, 500);
+        }
+      }
+
+      let isCalculatingShowdown = false; // 중복 실행 방지 플래그
+
+      async function calculateShowdown() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        // ★ 호스트만 계산 실행 (메시지 전송 보장)
+        if (currentRoom.hostId !== currentPlayerId) {
+          return;
+        }
+
+        const gs = currentRoom.gameState;
+
+        // 이미 계산 중이거나 계산된 경우 중복 실행 방지
+        if (isCalculatingShowdown) {
+          return;
+        }
+        if (gs.showdownCalculated) {
+          return;
+        }
+
+        isCalculatingShowdown = true;
+        console.log('calculateShowdown: 계산 시작');
+
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+
+        // Evaluate hands for all players
+        gs.players.forEach((player) => {
+          const handValue = evaluateHand(player.hand, gs.communityCards);
+          player.handRank = handValue.name;
+          player.handValue = handValue.value;
+          player.highCard = getHighCard(player.hand);
+        });
+
+        // Find player with actual best hand
+        const bestHandValue = Math.max(...gs.players.map((p) => p.handValue));
+        const bestPlayer = gs.players.find((p) => p.handValue === bestHandValue);
+
+        // 리버에서 선택한 칩 가져오기 (chipHistory의 마지막 = RIVER)
+        const getPlayerRiverChip = (player) => {
+          const riverHistory = player.chipHistory?.find((h) => h.phase === 'RIVER');
+          return riverHistory ? riverHistory.chip : player.selectedChip;
+        };
+
+        // 최고 칩 선택자 찾기 (리버 기준)
+        const playerChips = gs.players.map((p) => ({
+          player: p,
+          chip: getPlayerRiverChip(p),
+        }));
+        const maxChip = Math.max(...playerChips.map((pc) => pc.chip || 0));
+        const highestChipPlayer = playerChips.find((pc) => pc.chip === maxChip)?.player;
+
+        // 전체 칩 서열 체크 (모든 플레이어의 칩 = 실제 순위)
+        const chipOrderResult = checkFullChipOrder(gs.players, getPlayerRiverChip);
+        const chipOrderCorrect = chipOrderResult.correct;
+
+        console.log('calculateShowdown: 칩 서열 체크 결과:', {
+          correct: chipOrderCorrect,
+          mismatches: chipOrderResult.mismatches.map(
+            (m) => `${m.player.name}(${m.chip}번칩=${m.predictedRank}등예측→실제${m.actualRank}등)`,
+          ),
+          actualRanks: chipOrderResult.actualRanks,
+          playerChips: gs.players.map((p) => `${p.name}:${getPlayerRiverChip(p)}번칩`),
+        });
+
+        let success = false;
+        let successMsg = '';
+        let failMsg = '';
+
+        if (
+          extraMode === 'faceRecognition' ||
+          extraMode === 'irisScanner' ||
+          extraMode === 'fingerprint'
+        ) {
+          // 얼굴/홍체/지문 모드: 먼저 칩 서열 확인!
+          if (!chipOrderCorrect) {
+            // 칩 서열이 틀리면 바로 경보! (인식 기회 없음)
+            success = false;
+            // 틀린 사람들 상세 표시
+            const mismatchDetails = chipOrderResult.mismatches
+              .map(
+                (m) =>
+                  `${m.player.name}(${m.chip}번칩=${m.predictedRank}등예측→실제${m.actualRank}등)`,
+              )
+              .join(', ');
+            failMsg = `❌ 경보 발동! 칩 서열 실패! [${mismatchDetails}]`;
+          } else {
+            // 칩 서열이 맞으면 인식 단계
+            if (extraMode === 'faceRecognition') {
+              // 얼굴인식: 1등의 카드 숫자 전부 맞추기 (과반수 판정)
+              const correctGuesses = gs.players.filter((p) => {
+                if (!p.guessedNumbers || p.guessedNumbers.length === 0) return false;
+                // 모든 숫자를 맞춰야 함
+                const bestPlayerRanks = bestPlayer.hand.map((card) => card.rank).sort();
+                const guessedSorted = [...p.guessedNumbers].sort();
+                if (guessedSorted.length !== bestPlayerRanks.length) return false;
+                return guessedSorted.every((num, i) => num === bestPlayerRanks[i]);
+              }).length;
+
+              const majority = Math.ceil(gs.players.length / 2);
+              success = correctGuesses >= majority;
+
+              if (success) {
+                successMsg = `✅ 금고 열기 성공! 칩 서열 OK! + ${correctGuesses}/${
+                  gs.players.length
+                }명이 ${bestPlayer.name}의 카드 숫자(${bestPlayer.hand
+                  .map((c) => c.rank)
+                  .join(', ')})를 전부 맞춤!`;
+              } else {
+                failMsg = `❌ 경보 발동! 칩 서열은 맞았지만 얼굴인식 실패! ${correctGuesses}/${
+                  gs.players.length
+                }명만 맞춤. 실제 1등 ${bestPlayer.name}의 카드: ${bestPlayer.hand
+                  .map((c) => c.rank + c.suit)
+                  .join(', ')}`;
+              }
+            } else if (extraMode === 'irisScanner') {
+              // 홍체인식: 1등의 카드 숫자 중 하나만 맞추면 됨 (과반수 판정)
+              const correctGuesses = gs.players.filter((p) => {
+                if (!p.guessedNumbers || p.guessedNumbers.length === 0) return false;
+                // 하나라도 맞추면 OK
+                return p.guessedNumbers.some((num) =>
+                  bestPlayer.hand.some((card) => card.rank === num),
+                );
+              }).length;
+
+              const majority = Math.ceil(gs.players.length / 2);
+              success = correctGuesses >= majority;
+
+              if (success) {
+                successMsg = `✅ 금고 열기 성공! 칩 서열 OK! + ${correctGuesses}/${
+                  gs.players.length
+                }명이 ${bestPlayer.name}의 카드 숫자 중 하나(${bestPlayer.hand
+                  .map((c) => c.rank)
+                  .join(', ')})를 맞춤!`;
+              } else {
+                failMsg = `❌ 경보 발동! 칩 서열은 맞았지만 홍체인식 실패! ${correctGuesses}/${
+                  gs.players.length
+                }명만 맞춤. 실제 1등 ${bestPlayer.name}의 카드: ${bestPlayer.hand
+                  .map((c) => c.rank + c.suit)
+                  .join(', ')}`;
+              }
+            } else {
+              // 지문인식기: 1등의 족보를 맞추기 (과반수 판정)
+              const correctGuesses = gs.players.filter((p) => {
+                if (!p.guessedRank) return false;
+                return p.guessedRank === bestPlayer.handRank;
+              }).length;
+
+              const majority = Math.ceil(gs.players.length / 2);
+              success = correctGuesses >= majority;
+
+              if (success) {
+                successMsg = `✅ 금고 열기 성공! 칩 서열 OK! + ${correctGuesses}/${gs.players.length}명이 ${bestPlayer.name}의 족보(${bestPlayer.handRank})를 맞춤!`;
+              } else {
+                failMsg = `❌ 경보 발동! 칩 서열은 맞았지만 지문인식 실패! ${correctGuesses}/${gs.players.length}명만 맞춤. 실제 1등 ${bestPlayer.name}의 족보: ${bestPlayer.handRank}`;
+              }
+            }
+          }
+        } else {
+          // 스탠다드/보안카메라 모드: 칩 서열만 확인
+          success = chipOrderCorrect;
+
+          if (success) {
+            // 전체 서열 표시
+            const rankList = gs.players
+              .map((p) => {
+                const chip = getPlayerRiverChip(p);
+                const predictedRank = chipOrderResult.playerCount + 1 - chip;
+                return `${p.name}(${chip}번칩=${predictedRank}등)`;
+              })
+              .join(', ');
+            successMsg = `✅ 금고 열기 성공! 칩 서열 완벽! [${rankList}]`;
+          } else {
+            // 틀린 사람들 상세 표시
+            const mismatchDetails = chipOrderResult.mismatches
+              .map(
+                (m) =>
+                  `${m.player.name}(${m.chip}번칩=${m.predictedRank}등예측→실제${m.actualRank}등)`,
+              )
+              .join(', ');
+            failMsg = `❌ 경보 발동! 칩 서열 실패! [${mismatchDetails}]`;
+          }
+        }
+
+        if (success) {
+          const prevSafesOpened = gs.safesOpened;
+          gs.safesOpened++;
+          console.log(`금고 성공! 카운트: ${prevSafesOpened} → ${gs.safesOpened}`);
+          console.log('금고 성공! 메시지 전송:', successMsg);
+          addSystemMessage(successMsg, true);
+        } else {
+          const prevAlarmsTriggered = gs.alarmsTriggered;
+          gs.alarmsTriggered++;
+          console.log(`경보 발동! 카운트: ${prevAlarmsTriggered} → ${gs.alarmsTriggered}`);
+          console.log('경보 발동! 메시지 전송:', failMsg);
+          addSystemMessage(failMsg, true);
+        }
+
+        gs.showdownCalculated = true;
+        isCalculatingShowdown = false;
+
+        console.log(
+          'calculateShowdown: 최종 상태 - safesOpened:',
+          gs.safesOpened,
+          'alarmsTriggered:',
+          gs.alarmsTriggered,
+        );
+        await saveToStorage();
+        console.log('calculateShowdown: 서버 저장 완료');
+        showGameRoom(); // UI 업데이트
+      }
+
+      // 플레이어의 최고 카드 가져오기
+      function getHighCard(hand) {
+        const rankOrder = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        return hand.reduce((highest, card) => {
+          const currentIdx = rankOrder.indexOf(card.rank);
+          const highestIdx = rankOrder.indexOf(highest.rank);
+          return currentIdx > highestIdx ? card : highest;
+        }, hand[0]);
+      }
+
+      // 숫자 맞추기 모드에서 칩 번호에 따른 카드 범위
+      function getNumberRange(chip, playerCount) {
+        const ranges = {
+          3: {
+            1: ['2', '3', '4', '5', '6', '7'],
+            2: ['8', '9', '10', 'J'],
+            3: ['Q', 'K', 'A'],
+          },
+          4: {
+            1: ['2', '3', '4', '5', '6'],
+            2: ['7', '8', '9', '10'],
+            3: ['J', 'Q', 'K'],
+            4: ['A'],
+          },
+          5: {
+            1: ['2', '3', '4', '5', '6'],
+            2: ['7', '8', '9'],
+            3: ['10', 'J'],
+            4: ['Q', 'K'],
+            5: ['A'],
+          },
+          6: {
+            1: ['2', '3', '4', '5', '6'],
+            2: ['7', '8', '9'],
+            3: ['10', 'J'],
+            4: ['Q'],
+            5: ['K'],
+            6: ['A'],
+          },
+        };
+        return ranges[playerCount]?.[chip] || [];
+      }
+
+      function evaluateHand(hand, communityCards) {
+        // 완전한 포커 핸드 평가
+        const allCards = [...hand, ...communityCards];
+        const rankOrder = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+        // 카드를 숫자로 변환 (A는 14, 또는 스트레이트 체크 시 1로도 사용)
+        const getCardValue = (rank) => {
+          const idx = rankOrder.indexOf(rank);
+          return idx + 2; // 2~14
+        };
+
+        // 랭크와 슈트 카운트
+        const rankCounts = {};
+        const suitCounts = {};
+        const cardsByRank = {};
+
+        allCards.forEach((card) => {
+          rankCounts[card.rank] = (rankCounts[card.rank] || 0) + 1;
+          suitCounts[card.suit] = (suitCounts[card.suit] || 0) + 1;
+          if (!cardsByRank[card.rank]) cardsByRank[card.rank] = [];
+          cardsByRank[card.rank].push(card);
+        });
+
+        const counts = Object.values(rankCounts).sort((a, b) => b - a);
+
+        // 플러시 체크 (같은 무늬 5장 이상)
+        let flushSuit = null;
+        for (const [suit, count] of Object.entries(suitCounts)) {
+          if (count >= 5) {
+            flushSuit = suit;
+            break;
+          }
+        }
+        const hasFlush = flushSuit !== null;
+
+        // 스트레이트 체크 (연속된 숫자 5개)
+        const checkStraight = (cards) => {
+          const values = [...new Set(cards.map((c) => getCardValue(c.rank)))].sort((a, b) => a - b);
+          // A를 1로도 사용 (A-2-3-4-5 스트레이트)
+          if (values.includes(14)) {
+            values.unshift(1);
+          }
+
+          for (let i = 0; i <= values.length - 5; i++) {
+            let consecutive = true;
+            for (let j = 0; j < 4; j++) {
+              if (values[i + j + 1] - values[i + j] !== 1) {
+                consecutive = false;
+                break;
+              }
+            }
+            if (consecutive) {
+              return values[i + 4]; // 스트레이트 최고값 반환
+            }
+          }
+          return 0;
+        };
+
+        const straightHigh = checkStraight(allCards);
+        const hasStraight = straightHigh > 0;
+
+        // 스트레이트 플러시 체크
+        let straightFlushHigh = 0;
+        if (hasFlush) {
+          const flushCards = allCards.filter((c) => c.suit === flushSuit);
+          straightFlushHigh = checkStraight(flushCards);
+        }
+        const hasStraightFlush = straightFlushHigh > 0;
+
+        // 로열 스트레이트 플러시 체크 (10-J-Q-K-A 같은 무늬)
+        const hasRoyalFlush = straightFlushHigh === 14;
+
+        // 랭크별 카드 값 정렬 (높은 순)
+        const sortedRanks = Object.entries(rankCounts)
+          .map(([rank, count]) => ({ rank, count, value: getCardValue(rank) }))
+          .sort((a, b) => {
+            if (b.count !== a.count) return b.count - a.count; // 개수 먼저
+            return b.value - a.value; // 같은 개수면 값 높은 순
+          });
+
+        // 키커 계산 (족보에 사용되지 않은 최고 카드)
+        const getKickers = (usedRanks, count) => {
+          return sortedRanks
+            .filter((r) => !usedRanks.includes(r.rank))
+            .slice(0, count)
+            .map((r) => r.value);
+        };
+
+        // value 계산: 족보기본값 * 1000000 + 주요카드값 * 10000 + 서브카드값 * 100 + 키커
+        // 이렇게 하면 같은 족보라도 카드 랭크에 따라 순위가 다름
+
+        // 핸드 랭킹 결정 (높은 순서대로)
+        if (hasRoyalFlush) {
+          return { name: '로열 스트레이트 플러시', value: 10 * 1000000 };
+        }
+        if (hasStraightFlush) {
+          return { name: '스트레이트 플러시', value: 9 * 1000000 + straightFlushHigh * 10000 };
+        }
+        if (counts[0] === 4) {
+          const fourRank = sortedRanks.find((r) => r.count === 4);
+          const kickers = getKickers([fourRank.rank], 1);
+          return {
+            name: '포카드',
+            value: 8 * 1000000 + fourRank.value * 10000 + (kickers[0] || 0),
+          };
+        }
+        if (counts[0] === 3 && counts[1] >= 2) {
+          const threeRank = sortedRanks.find((r) => r.count === 3);
+          const twoRank = sortedRanks.find((r) => r.count >= 2 && r.rank !== threeRank.rank);
+          return {
+            name: '풀하우스',
+            value: 7 * 1000000 + threeRank.value * 10000 + (twoRank?.value || 0) * 100,
+          };
+        }
+        if (hasFlush) {
+          const flushCards = allCards
+            .filter((c) => c.suit === flushSuit)
+            .map((c) => getCardValue(c.rank))
+            .sort((a, b) => b - a);
+          return {
+            name: '플러시',
+            value: 6 * 1000000 + flushCards[0] * 10000 + (flushCards[1] || 0) * 100,
+          };
+        }
+        if (hasStraight) {
+          return { name: '스트레이트', value: 5 * 1000000 + straightHigh * 10000 };
+        }
+        if (counts[0] === 3) {
+          const threeRank = sortedRanks.find((r) => r.count === 3);
+          const kickers = getKickers([threeRank.rank], 2);
+          return {
+            name: '트리플',
+            value:
+              4 * 1000000 + threeRank.value * 10000 + (kickers[0] || 0) * 100 + (kickers[1] || 0),
+          };
+        }
+        if (counts[0] === 2 && counts[1] === 2) {
+          const pairs = sortedRanks.filter((r) => r.count === 2).slice(0, 2);
+          const highPair = Math.max(pairs[0].value, pairs[1].value);
+          const lowPair = Math.min(pairs[0].value, pairs[1].value);
+          const kickers = getKickers([pairs[0].rank, pairs[1].rank], 1);
+          return {
+            name: '투페어',
+            value: 3 * 1000000 + highPair * 10000 + lowPair * 100 + (kickers[0] || 0),
+          };
+        }
+        if (counts[0] === 2) {
+          const pairRank = sortedRanks.find((r) => r.count === 2);
+          const kickers = getKickers([pairRank.rank], 3);
+          return {
+            name: '원페어',
+            value:
+              2 * 1000000 +
+              pairRank.value * 10000 +
+              (kickers[0] || 0) * 100 +
+              (kickers[1] || 0) * 10 +
+              (kickers[2] || 0),
+          };
+        }
+        // 하이카드
+        const highCards = sortedRanks.slice(0, 5).map((r) => r.value);
+        return {
+          name: '하이카드',
+          value:
+            1 * 1000000 +
+            (highCards[0] || 0) * 10000 +
+            (highCards[1] || 0) * 100 +
+            (highCards[2] || 0) * 10 +
+            (highCards[3] || 0),
+        };
+      }
+
+      function nextRound() {
+        if (!currentRoom || !currentRoom.gameState) return;
+
+        const gs = currentRoom.gameState;
+
+        if (gs.safesOpened >= 3) {
+          addSystemMessage('🎉 승리! 3개의 금고를 열었습니다!', true);
+          return;
+        }
+
+        if (gs.alarmsTriggered >= 3) {
+          addSystemMessage('💥 패배! 경보가 3번 발동되었습니다!', true);
+          return;
+        }
+
+        playSound('start'); // 라운드 시작 사운드
+
+        // Start new round
+        const deck = createDeck();
+        shuffle(deck);
+
+        // 모드에 따른 카드 수 결정
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+
+        gs.players.forEach((player) => {
+          player.hand = Array.from({ length: cardCount }, () => deck.pop());
+          player.selectedChip = null;
+          player.confirmed = false;
+          player.handRank = null;
+          player.handValue = null;
+          player.chipHistory = []; // 칩 히스토리 리셋
+          player.guessedNumbers = []; // 홍체인식기 모드용
+          player.guessedRank = null; // 지문인식기 모드용
+        });
+
+        gs.phase = 'PRE_FLOP';
+        gs.round++;
+        gs.deck = deck;
+        gs.communityCards = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
+
+        saveToStorage();
+        addSystemMessage(`라운드 ${gs.round} 시작!`, true);
+        showGameRoom();
+
+        // 프리플랍 팁 팝업 표시
+        setTimeout(() => {
+          showPreFlopTip();
+        }, 300);
+
+        setTimeout(() => autoSelectBotsChips(), 500);
+      }
+
+      function endGame() {
+        if (!currentRoom) return;
+
+        const gs = currentRoom.gameState;
+        if (window.bongleRecordMatch) {
+          const won = !!(gs && gs.safesOpened >= 3);
+          window.bongleRecordMatch({ gameId: 'gangster', won, metric: won ? 1 : 0 });
+        }
+        if (gs.safesOpened >= 3) {
+          alert('축하합니다! 게임에서 승리했습니다!');
+        } else {
+          alert('게임 오버! 다음 기회에 다시 도전하세요.');
+        }
+
+        currentRoom.gameState = null;
+        saveToStorage();
+        showGameRoom();
+      }
+
+      // Separate chip selection area
+      function renderChipSelection() {
+        const gs = currentRoom.gameState;
+        const currentPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+
+        // 봇이면 표시 안함
+        if (!currentPlayer || currentPlayer.isBot) {
+          return '';
+        }
+
+        // 게임 종료 상태면 표시 안함
+        if (gs.safesOpened >= 3 || gs.alarmsTriggered >= 3) {
+          return '';
+        }
+
+        // 쇼다운일 때
+        if (gs.phase === 'SHOWDOWN') {
+          // 이미 결과가 계산되었으면 표시 안함
+          if (gs.showdownCalculated) {
+            return '';
+          }
+          // 얼굴인식 모드 - 숫자 전부 선택
+          if (extraMode === 'faceRecognition') {
+            return renderNumberSelection(currentPlayer, gs, 'face');
+          }
+          // 홍체인식 모드 - 숫자 하나만 선택
+          if (extraMode === 'irisScanner') {
+            return renderNumberSelection(currentPlayer, gs, 'iris');
+          }
+          // 지문인식기 모드 - 족보 선택
+          if (extraMode === 'fingerprint') {
+            return renderRankSelection(currentPlayer, gs);
+          }
+          // 스탠다드/보안카메라는 표시 안함
+          return '';
+        }
+
+        // 프리플랍~리버: 항상 일반 칩 선택 (모든 모드 동일)
+        const playerCount = gs.players.length;
+        const chipValues = Array.from({ length: playerCount }, (_, i) => i + 1);
+
+        // Get already selected chips by other players
+        const selectedChips = gs.players
+          .filter((p) => p.id !== currentPlayerId && p.selectedChip !== null)
+          .map((p) => p.selectedChip);
+
+        return `
+        <div class="chip-selection-area phase-${gs.phase}">
+          <h4>칩을 선택하세요 (손의 강도 예측: 1~${playerCount}) - 다른 플레이어 칩을 클릭하면 교환/가져오기 가능!</h4>
+          <div class="chip-selection">
+            ${chipValues
+              .map((value) => {
+                const isSelected = currentPlayer.selectedChip === value;
+                const isDisabled = selectedChips.includes(value);
+                return `
+                <div class="chip ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}"
+                     data-value="${value}"
+                     onclick="${isDisabled ? '' : `selectChip(${value})`}">
+                  ${value}
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+          ${
+            currentPlayer.selectedChip
+              ? `<p style="color: #10b981; font-size: 0.875rem; margin-top: 8px;">
+                  ✓ 선택: ${currentPlayer.selectedChip}번 칩
+                  ${currentPlayer.confirmed ? '(결정완료)' : '- 결정 버튼을 눌러주세요'}
+                </p>`
+              : '<p style="color: #94a3b8; font-size: 0.875rem; margin-top: 8px;">칩을 선택하세요</p>'
+          }
+        </div>
+      `;
+      }
+
+      // 숫자 선택 UI (얼굴인식/홍체인식 공용)
+      function renderNumberSelection(currentPlayer, gs, mode) {
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const selectedNumbers = currentPlayer.guessedNumbers || [];
+
+        // 얼굴인식: cardCount개 전부 / 홍체인식: 1개만
+        const maxSelect = mode === 'face' ? cardCount : 1;
+        const modeIcon = mode === 'face' ? '😀' : '👁️';
+        const modeName = mode === 'face' ? '얼굴인식' : '홍체인식';
+        const modeDesc =
+          mode === 'face'
+            ? `1등의 카드 숫자 ${cardCount}개를 전부 맞추세요!`
+            : `1등의 카드 숫자 중 1개를 맞추세요!`;
+
+        return `
+        <div class="chip-selection-area phase-${gs.phase}">
+          <h4>${modeIcon} ${modeName}: ${modeDesc}</h4>
+          <div class="number-selection">
+            ${ranks
+              .map((rank) => {
+                const isSelected = selectedNumbers.includes(rank);
+                const canSelect = selectedNumbers.length < maxSelect || isSelected;
+                return `
+                <div class="number-btn ${isSelected ? 'selected' : ''} ${
+                  !canSelect ? 'disabled' : ''
+                }"
+                     onclick="${canSelect ? `selectNumber('${rank}')` : ''}">
+                  ${rank}
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+          <p style="color: ${
+            selectedNumbers.length === maxSelect ? '#10b981' : '#94a3b8'
+          }; font-size: 0.875rem; margin-top: 8px;">
+            선택: ${selectedNumbers.length}/${maxSelect}개 ${
+          selectedNumbers.length > 0 ? `(${selectedNumbers.join(', ')})` : ''
+        }
+            ${
+              currentPlayer.confirmed
+                ? '✅ 결정완료'
+                : selectedNumbers.length === maxSelect
+                ? '- 결정 버튼을 눌러주세요'
+                : ''
+            }
+          </p>
+        </div>
+      `;
+      }
+
+      // 지문인식기 모드 - 족보 선택 UI
+      function renderRankSelection(currentPlayer, gs) {
+        const handRanks = [
+          { name: '로열 스트레이트 플러시', value: 10 },
+          { name: '스트레이트 플러시', value: 9 },
+          { name: '포카드', value: 8 },
+          { name: '풀하우스', value: 7 },
+          { name: '플러시', value: 6 },
+          { name: '스트레이트', value: 5 },
+          { name: '트리플', value: 4 },
+          { name: '투페어', value: 3 },
+          { name: '원페어', value: 2 },
+          { name: '하이카드', value: 1 },
+        ];
+        const selectedRank = currentPlayer.guessedRank || null;
+
+        return `
+        <div class="chip-selection-area phase-${gs.phase}">
+          <h4>👆 지문인식기: 1등의 족보(조합)를 선택하세요!</h4>
+          <div class="rank-selection">
+            ${handRanks
+              .map((rank) => {
+                const isSelected = selectedRank === rank.name;
+                return `
+                <div class="rank-btn ${isSelected ? 'selected' : ''}"
+                     onclick="selectRank('${rank.name}')">
+                  <span class="rank-number">${rank.value}위</span>
+                  <span class="rank-name">${rank.name}</span>
+                </div>
+              `;
+              })
+              .join('')}
+          </div>
+          <p style="color: ${
+            selectedRank ? '#10b981' : '#94a3b8'
+          }; font-size: 0.875rem; margin-top: 8px;">
+            ${selectedRank ? `✓ 선택: ${selectedRank}` : '족보를 선택하세요'}
+            ${
+              currentPlayer.confirmed
+                ? ' ✅ 결정완료'
+                : selectedRank
+                ? ' - 결정 버튼을 눌러주세요'
+                : ''
+            }
+          </p>
+        </div>
+      `;
+      }
+
+      // 숫자 선택 (얼굴인식/홍체인식 모드) - 쇼다운 전용
+      function selectNumber(rank) {
+        if (!currentRoom || !currentRoom.gameState) return;
+        const gs = currentRoom.gameState;
+        if (gs.phase !== 'SHOWDOWN') return; // 쇼다운에서만 동작
+        if (gs.showdownCalculated) return; // 이미 결과 계산됨
+
+        const myPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        if (!myPlayer || myPlayer.isBot) return;
+        if (myPlayer.confirmed) return; // 이미 결정함
+
+        const extraMode =
+          currentRoom.extraMode ||
+          (currentRoom.gameMode === 'faceRecognition' ||
+          currentRoom.gameMode === 'irisScanner' ||
+          currentRoom.gameMode === 'fingerprint'
+            ? currentRoom.gameMode
+            : null);
+        const cardMode = currentRoom.cardMode || currentRoom.gameMode || 'standard';
+        const cardCount = cardMode === 'securityCam' ? 3 : 2;
+
+        // 얼굴인식: cardCount개 전부 / 홍체인식: 1개만
+        const maxSelect = extraMode === 'faceRecognition' ? cardCount : 1;
+
+        if (!myPlayer.guessedNumbers) myPlayer.guessedNumbers = [];
+
+        const idx = myPlayer.guessedNumbers.indexOf(rank);
+        if (idx >= 0) {
+          myPlayer.guessedNumbers.splice(idx, 1);
+        } else if (myPlayer.guessedNumbers.length < maxSelect) {
+          myPlayer.guessedNumbers.push(rank);
+        }
+
+        myPlayer.confirmed = false;
+
+        saveToStorage();
+        showGameRoom();
+      }
+
+      // 족보 선택 (지문인식기 모드) - 쇼다운 전용
+      function selectRank(rankName) {
+        if (!currentRoom || !currentRoom.gameState) return;
+        const gs = currentRoom.gameState;
+        if (gs.phase !== 'SHOWDOWN') return; // 쇼다운에서만 동작
+        if (gs.showdownCalculated) return; // 이미 결과 계산됨
+
+        const myPlayer = gs.players.find((p) => p.id === currentPlayerId);
+        if (!myPlayer || myPlayer.isBot) return;
+        if (myPlayer.confirmed) return; // 이미 결정함
+
+        myPlayer.guessedRank = rankName;
+        myPlayer.confirmed = false;
+
+        saveToStorage();
+        showGameRoom();
+      }
+
+      // Check for invite link
+      const urlParams = new URLSearchParams(window.location.search);
+      const inviteRoomId = urlParams.get('room');
+      if (inviteRoomId) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Auto-join room if exists
+        setTimeout(() => {
+          const room = rooms.find((r) => r.id === inviteRoomId);
+          if (room && currentPlayerId) {
+            joinRoom(inviteRoomId);
+          }
+        }, 100);
+      }
+
+      // Start app
+      init();
+    </script>
+  </body>
+</html>

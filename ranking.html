@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>랭킹</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h1 id="title">랭킹</h1>
+      <a class="btn" href="index.html">홈</a>
+    </div>
+    <div id="modes" class="tabs"></div>
+    <div id="tabs" class="tabs"></div>
+    <div id="list" class="panel"></div>
+    <p class="hint" id="err"></p>
+  </div>
+  <script type="module">
+    import { GAMES, gameById, seoulDay } from "./js/common.js";
+    import { readRankings } from "./firebase/db.js";
+
+    const q = new URLSearchParams(location.search);
+    const game = gameById(q.get("game") || "hundoku");
+    const mode = game.modes.some((m) => m.id === q.get("mode")) ? q.get("mode") : game.modes[0].id;
+    const tab = ["today", "streak", "rate"].includes(q.get("tab")) ? q.get("tab") : "today";
+
+    document.getElementById("title").textContent = game.title + " 랭킹";
+    document.getElementById("modes").innerHTML = game.modes.map((m) =>
+      `<a class="tab ${m.id === mode ? "on" : ""}" href="?game=${game.id}&mode=${m.id}&tab=${tab}">${m.label}</a>`
+    ).join("") + GAMES.map((g) =>
+      `<a class="tab ${g.id === game.id ? "on" : ""}" href="?game=${g.id}&mode=${g.modes[0].id}&tab=today">${g.emoji} ${g.title}</a>`
+    ).join("");
+    document.getElementById("tabs").innerHTML = [
+      ["today", "오늘의 결과"],
+      ["streak", "연승"],
+      ["rate", "평균"],
+    ].map(([id, label]) =>
+      `<a class="tab ${id === tab ? "on" : ""}" href="?game=${game.id}&mode=${mode}&tab=${id}">${label}</a>`
+    ).join("");
+
+    const today = seoulDay();
+    try {
+      const raw = await readRankings(game.id, mode);
+      const rows = Object.entries(raw || {}).map(([id, rec]) => ({ id, ...rec }));
+      let view = [];
+      if (tab === "today") {
+        view = rows.filter((r) => r.today === today).map((r) => ({
+          name: r.nickname || "플레이어",
+          status: r.todayWon ? "성공" : "실패",
+          sort: [(r.todayWon ? 0 : 1), game.higherBetter ? -(Number(r.todayMetric) || 0) : (Number(r.todayMetric) || 999999)],
+        }));
+      } else if (tab === "streak") {
+        view = rows.map((r) => ({
+          name: r.nickname || "플레이어",
+          status: (Number(r.streak) || 0) + "연승",
+          sort: [-(Number(r.streak) || 0), -(Number(r.wins) || 0)],
+        }));
+      } else {
+        view = rows.filter((r) => Number(r.metricN) > 0).map((r) => {
+          const avg = Number(r.metricSum) / Number(r.metricN);
+          return {
+            name: r.nickname || "플레이어",
+            status: game.metric(avg),
+            sort: [game.higherBetter ? -avg : avg],
+          };
+        });
+      }
+      view.sort((a, b) => {
+        const n = Math.min(a.sort.length, b.sort.length);
+        for (let i = 0; i < n; i++) if (a.sort[i] !== b.sort[i]) return a.sort[i] - b.sort[i];
+        return 0;
+      });
+      const list = document.getElementById("list");
+      list.innerHTML = view.length ? view.map((row, i) => `
+        <div class="row">
+          <div class="num">${i + 1}</div>
+          <div class="name">${row.name}</div>
+          <div class="stat">${row.status}</div>
+        </div>
+      `).join("") : `<p class="hint">아직 기록이 없어요</p>`;
+    } catch (err) {
+      document.getElementById("err").textContent = err && err.message ? err.message : "랭킹을 읽지 못했습니다.";
+    }
+  </script>
+</body>
+</html>

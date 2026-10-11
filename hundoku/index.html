@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>훈도쿠</title>
+  <link rel="stylesheet" href="../css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1 id="title">훈도쿠</h1>
+        <p class="sub life" id="lives"></p>
+      </div>
+      <a class="btn" href="../index.html">홈</a>
+    </div>
+    <div class="tabs" id="modes"></div>
+    <div class="stack">
+      <button class="btn" id="catchBtn" type="button">잡기</button>
+      <button class="btn" id="markBtn" type="button">빈칸</button>
+      <button class="btn" id="hintBtn" type="button">힌트</button>
+      <a class="btn" id="rankLink" href="../ranking.html?game=hundoku">랭킹</a>
+    </div>
+    <div class="board" id="board"></div>
+    <p class="hint" id="msg"></p>
+  </div>
+  <script type="module">
+    import { hashStr, seoulDay, nickname } from "../js/common.js";
+    import { recordResult } from "../js/rank.js";
+
+    const q = new URLSearchParams(location.search);
+    const mode = q.get("mode") === "challenge" ? "challenge" : "normal";
+    const size = mode === "challenge" ? 12 : 8;
+    const maxLives = mode === "challenge" ? 5 : 3;
+    const hintLimit = mode === "challenge" ? 5 : 3;
+    const day = seoulDay();
+    const key = "bongle:hundoku:" + mode + ":" + day;
+    document.getElementById("title").textContent = mode === "challenge" ? "훈도쿠 챌린지" : "훈도쿠";
+    document.getElementById("modes").innerHTML =
+      `<a class="tab ${mode === "normal" ? "on" : ""}" href="?mode=normal">일반</a>` +
+      `<a class="tab ${mode === "challenge" ? "on" : ""}" href="?mode=challenge">챌린지</a>`;
+    document.getElementById("rankLink").href = "../ranking.html?game=hundoku&mode=" + mode;
+
+    function rng(seed) {
+      let a = seed >>> 0;
+      return () => {
+        a = (a + 0x6d2b79f5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    function shuffle(list, rand) {
+      const arr = list.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+      }
+      return arr;
+    }
+    function pickTargets(n, rand) {
+      const used = Array(n).fill(false);
+      const chosen = [];
+      function row(r) {
+        if (r >= n) return true;
+        let cols = [];
+        for (let c = 0; c < n; c++) {
+          if (used[c]) continue;
+          if (r > 0 && Math.abs(c - chosen[r - 1]) <= 1) continue;
+          cols.push(c);
+        }
+        cols = shuffle(cols, rand);
+        for (const c of cols) {
+          used[c] = true;
+          chosen[r] = c;
+          if (row(r + 1)) return true;
+          used[c] = false;
+        }
+        return false;
+      }
+      row(0);
+      return chosen.map((c, r) => r * n + c);
+    }
+
+    const rand = rng(hashStr(day + "|" + mode + "|hundoku"));
+    const targets = new Set(pickTargets(size, rand));
+    const codes = {};
+    let i = 0;
+    targets.forEach((idx) => {
+      codes[idx] = String((i % 25) + 1).padStart(2, "0");
+      i += 1;
+    });
+    const revealed = new Set();
+    const first = [...targets][Math.floor(rand() * targets.size)];
+    revealed.add(first);
+    let state = JSON.parse(localStorage.getItem(key) || "null");
+    if (!state) {
+      state = { captured: [first], marked: [], wrong: 0, hints: 0, lives: maxLives, status: "playing" };
+    }
+    let tool = "catch";
+
+    function adjacent(idx) {
+      const r = Math.floor(idx / size);
+      const c = idx % size;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (!dr && !dc) continue;
+          const rr = r + dr, cc = c + dc;
+          if (rr < 0 || cc < 0 || rr >= size || cc >= size) continue;
+          if (targets.has(rr * size + cc)) return true;
+        }
+      }
+      return false;
+    }
+
+    function paint() {
+      document.getElementById("lives").textContent = "목숨 " + state.lives + " · 힌트 " + state.hints + "/" + hintLimit;
+      const board = document.getElementById("board");
+      board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+      board.innerHTML = "";
+      for (let idx = 0; idx < size * size; idx++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cell";
+        const cap = state.captured.includes(idx);
+        const mark = state.marked.includes(idx);
+        if (cap && codes[idx]) {
+          const img = document.createElement("img");
+          img.src = "assets/" + codes[idx] + ".png";
+          img.alt = "";
+          btn.appendChild(img);
+        } else if (mark) {
+          btn.textContent = adjacent(idx) && !targets.has(idx) ? "👣" : "✕";
+        }
+        btn.addEventListener("click", () => onCell(idx));
+        board.appendChild(btn);
+      }
+    }
+
+    async function finish(won) {
+      state.status = won ? "won" : "lost";
+      localStorage.setItem(key, JSON.stringify(state));
+      const metric = state.wrong + state.hints;
+      document.getElementById("msg").textContent = won ? "성공. 감점 " + metric : "실패";
+      try {
+        const res = await recordResult({ gameId: "hundoku", mode, won, metric });
+        if (!res.saved) document.getElementById("msg").textContent += " · " + res.reason;
+      } catch (err) {
+        document.getElementById("msg").textContent += " · " + (err.message || "저장 실패");
+      }
+      paint();
+    }
+
+    function onCell(idx) {
+      if (state.status !== "playing") return;
+      if (!nickname()) {
+        document.getElementById("msg").textContent = "홈에서 닉네임을 입력하세요.";
+        return;
+      }
+      if (state.captured.includes(idx) || state.marked.includes(idx)) return;
+      const isTarget = targets.has(idx);
+      if (tool === "hint") {
+        if (state.hints >= hintLimit) return;
+        state.hints += 1;
+        if (isTarget) state.captured.push(idx);
+        else state.marked.push(idx);
+      } else if (tool === "catch") {
+        if (isTarget) state.captured.push(idx);
+        else {
+          state.marked.push(idx);
+          state.wrong += 1;
+          state.lives -= 1;
+        }
+      } else if (isTarget) {
+        state.captured.push(idx);
+        state.wrong += 1;
+        state.lives -= 1;
+      } else {
+        state.marked.push(idx);
+      }
+      localStorage.setItem(key, JSON.stringify(state));
+      if (state.lives <= 0) return finish(false);
+      if (state.captured.length >= size) return finish(true);
+      paint();
+    }
+
+    document.getElementById("catchBtn").onclick = () => { tool = "catch"; };
+    document.getElementById("markBtn").onclick = () => { tool = "mark"; };
+    document.getElementById("hintBtn").onclick = () => { tool = "hint"; };
+    if (state.status !== "playing") {
+      document.getElementById("msg").textContent = state.status === "won" ? "오늘은 이미 성공했습니다." : "오늘은 이미 끝났습니다.";
+    }
+    paint();
+  </script>
+</body>
+</html>
